@@ -1,37 +1,19 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 import DisclaimerBanner from './components/DisclaimerBanner'
 import Dashboard from './pages/Dashboard'
 import Alerts from './pages/Alerts'
 import About from './pages/About'
-import { DISTRICT_NAME, alerts as mockAlerts } from './data/mockData'
-import { locations as mockLocations } from './data/locationData'
+
+const DISTRICT_NAME = 'Kalyanpur Demo District'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')
   const [syndrome, setSyndrome] = useState('All')
   const [days, setDays] = useState(7)
   const [minScore, setMinScore] = useState(0)
-  const [selectedId, setSelectedId] = useState(mockLocations[0]?.id || null)
-
-  const filteredLocations = useMemo(() => {
-    return mockLocations.filter((loc) => {
-      const syndromeOk = syndrome === 'All' || loc.syndrome === syndrome
-      const scoreOk = loc.riskScore >= minScore
-      return syndromeOk && scoreOk
-    })
-  }, [syndrome, minScore])
-
-  const filteredAlerts = useMemo(() => {
-    return mockAlerts.filter((alert) => {
-      const loc = mockLocations.find((l) => l.id === alert.locationId)
-      if (!loc) return false
-      const syndromeOk = syndrome === 'All' || loc.syndrome === syndrome
-      const scoreOk = alert.score >= minScore
-      return syndromeOk && scoreOk
-    })
-  }, [syndrome, minScore])
+  const [selectedId, setSelectedId] = useState(null)
 
   return (
     <div className="min-h-screen bg-sentinel-mist font-sans text-sentinel-ink">
@@ -56,13 +38,14 @@ function App() {
         <main className="min-w-0 flex-1 p-6">
           {currentPage === 'dashboard' && (
             <Dashboard
-              locations={filteredLocations}
               selectedId={selectedId}
               onSelectLocation={setSelectedId}
               days={days}
+              syndrome={syndrome}
+              minScore={minScore}
             />
           )}
-          {currentPage === 'alerts' && <Alerts alerts={filteredAlerts} />}
+          {currentPage === 'alerts' && <Alerts />}
           {currentPage === 'about' && <About />}
         </main>
       </div>

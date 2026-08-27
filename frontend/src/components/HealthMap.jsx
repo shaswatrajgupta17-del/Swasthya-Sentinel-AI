@@ -1,7 +1,6 @@
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import { useEffect } from 'react'
 import 'leaflet/dist/leaflet.css'
-import { DEMO_DISTRICT_CENTER } from '../data/locationData'
 
 const RISK_COLORS = { Low: '#2a9d8f', Watch: '#e9c46a', High: '#e76f51' }
 
@@ -15,7 +14,21 @@ function SelectedLocationView({ location }) {
   return null
 }
 
+function FitLocations({ locations }) {
+  const map = useMap()
+
+  useEffect(() => {
+    if (locations.length > 1) {
+      map.fitBounds(locations.map((location) => [location.lat, location.lng]), { padding: [30, 30] })
+    }
+  }, [locations, map])
+
+  return null
+}
+
 function HealthMap({ locations, selectedLocation, onSelectLocation }) {
+  const initialCenter = [locations[0].lat, locations[0].lng]
+
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-sentinel-card shadow-sm" aria-label="Synthetic district risk map">
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 pb-3">
@@ -33,12 +46,13 @@ function HealthMap({ locations, selectedLocation, onSelectLocation }) {
         </div>
       </div>
       <div className="h-[390px]">
-        <MapContainer center={DEMO_DISTRICT_CENTER} zoom={13} scrollWheelZoom className="h-full w-full" aria-label="Demo district map">
+        <MapContainer center={initialCenter} zoom={13} scrollWheelZoom className="h-full w-full" aria-label="Demo district map">
           <TileLayer
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <SelectedLocationView location={selectedLocation} />
+          <FitLocations locations={locations} />
           {locations.map((location) => {
             const selected = location.id === selectedLocation?.id
             return (
@@ -53,7 +67,7 @@ function HealthMap({ locations, selectedLocation, onSelectLocation }) {
                 <Popup>
                   <strong>{location.name}</strong><br />
                   Risk {location.riskScore}/100 · {location.riskCategory}<br />
-                  <span>{location.syndrome} signals (synthetic)</span>
+                  <span>Synthetic aggregate signals</span>
                 </Popup>
               </CircleMarker>
             )

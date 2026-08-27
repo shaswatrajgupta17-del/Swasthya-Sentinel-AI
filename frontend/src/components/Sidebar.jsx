@@ -1,4 +1,5 @@
-import { DAY_OPTIONS, SYNDROME_OPTIONS } from '../data/mockData'
+const SYNDROME_OPTIONS = ['All', 'Diarrhea', 'Fever', 'Cough', 'Rash']
+const DAY_OPTIONS = [7, 14, 30]
 
 function Sidebar({
   currentPage,
