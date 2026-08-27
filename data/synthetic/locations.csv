@@ -1,0 +1,13 @@
+location_id,location_name,location_type,block,district,latitude,longitude
+loc_001,Rampur,village,East Block,Kalyanpur Demo District,23.184,79.952
+loc_002,Lakshmipur,village,East Block,Kalyanpur Demo District,23.19,79.96
+loc_003,Devgaon,village,East Block,Kalyanpur Demo District,23.178,79.961
+loc_004,Madhavpur,village,West Block,Kalyanpur Demo District,23.205,79.915
+loc_005,Bansipur,village,West Block,Kalyanpur Demo District,23.22,79.938
+loc_006,Chandpur,village,North Block,Kalyanpur Demo District,23.212,79.98
+loc_007,Gokulwadi,village,North Block,Kalyanpur Demo District,23.165,79.925
+loc_008,Sundarpur,village,South Block,Kalyanpur Demo District,23.155,79.987
+loc_009,Haripur,village,South Block,Kalyanpur Demo District,23.145,79.945
+loc_010,Neemkheda,village,Central Block,Kalyanpur Demo District,23.198,79.945
+loc_011,Kesaritola,village,Central Block,Kalyanpur Demo District,23.194,79.982
+loc_012,Sonapur,village,West Block,Kalyanpur Demo District,23.232,79.905

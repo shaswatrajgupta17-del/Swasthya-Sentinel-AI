@@ -18,13 +18,14 @@ Living log of decisions and status. Update this file when an important decision 
 | 2026-08-28 | Risk grain: **location × time window**, not person-level | Privacy-conscious prototype |
 | 2026-08-28 | Documentation-first; **no app code in Phase 0** | Avoid building the wrong system |
 | 2026-08-28 | Disclaimer required on UI and `/health` | Legal/ethical clarity for SIH |
+| 2026-08-28 | Phase 3 uses a fixed-seed, 60-day fictional dataset with a three-village planted cluster | Makes the SIH demo repeatable while preserving privacy |
 
 ---
 
 ## Current status
 
-**Phase 2 - Dashboard and map: completed.**  
-Phase 1 frontend foundation and Phase 2 interactive mock-data map are complete. No backend, database, ML model, Azure integration, or n8n workflow has been created.
+**Phase 3 - Synthetic health data: completed.**  
+Phase 1 frontend foundation, Phase 2 interactive mock-data map, and Phase 3 reproducible synthetic CSVs are complete. No backend, database, ML model, Azure integration, or n8n workflow has been created.
 
 ---
 
@@ -39,19 +40,19 @@ Phase 1 frontend foundation and Phase 2 interactive mock-data map are complete. 
 - Placeholder directories: `frontend/`, `backend/`, `ml/`, `data/synthetic/`, `n8n/`
 - **Phase 1:** React + Vite + JavaScript + Tailwind frontend foundation, dashboard shell, reusable shared components, static mock data, Alerts and About pages.
 - **Phase 2:** Interactive React Leaflet district map, 8 fictional village locations, selected-location cluster panel, synced risk list, and Recharts 14-day signal trends.
+- **Phase 3:** Generated five aggregate-only CSVs for 12 fictional villages over 60 days, plus `scripts/generate_synthetic_data.py` and a data dictionary. Rampur, Lakshmipur, and Devgaon are the planted multi-signal cluster.
 
 ---
 
 ## Current task
 
-Await approval for **Phase 3 - Synthetic health data**. Keep Phase 2 on frontend mock data until then.
+Await approval for **Phase 4 - Backend and database**. Keep the generated CSVs as the source for the future seed process.
 
 ---
 
 ## Known issues
 
 - Empty module folders have no runtime yet (expected).
-- Exact demo district geography (real vs fully fictional names) is **not frozen** — decide in Phase 3.
 - SQLAlchemy vs sqlite3 is **not frozen** — decide in Phase 4.
 - Alert channel for n8n (email vs Telegram vs Discord) is **not frozen** — decide in Phase 7.
 - Azure go/no-go is **not frozen** — decide in Phase 8.
@@ -60,7 +61,6 @@ Await approval for **Phase 3 - Synthetic health data**. Keep Phase 2 on frontend
 
 ## Future decisions
 
-- Phase 3: fictional district vs clearly labelled dummy names of a real region
 - Phase 4: ORM choice; whether `/internal/run-risk` is CLI-only
 - Phase 5: z-score vs Isolation Forest vs both; DBSCAN vs k-distance neighbours
 - Phase 6: rule-based factors vs SHAP
@@ -77,6 +77,7 @@ Await approval for **Phase 3 - Synthetic health data**. Keep Phase 2 on frontend
 | Frontend | React, Vite, JavaScript, Tailwind CSS | Phase 1 complete |
 | Maps | React Leaflet | Phase 2 complete (mock coordinates only) |
 | Charts | Recharts | Phase 2 complete (mock trends only) |
+| Synthetic data | pandas generator, fixed random seed `20260828` | Phase 3 complete |
 | Backend | Python FastAPI | Chosen, not scaffolded |
 | Database | SQLite | Chosen, not created |
 | ML | Pandas, NumPy, Scikit-learn; optional XGBoost, SHAP | Chosen, not implemented |
