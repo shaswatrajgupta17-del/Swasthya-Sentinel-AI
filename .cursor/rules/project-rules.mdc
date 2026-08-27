@@ -1,0 +1,45 @@
+---
+description: Swasthya Sentinel AI — product, architecture, and safety rules for all coding work
+alwaysApply: true
+---
+
+# Swasthya Sentinel AI — project rules
+
+Follow `PRD.md`, `architecture.md`, `design.md`, and `phases.md`. If a request conflicts with them, follow the docs and say so.
+
+## Build only the current phase
+
+- Read `memory.md` for current phase. Do not build features from later phases.
+- Do not scaffold Vite, FastAPI, ML, n8n, or Azure until that phase starts.
+- Do not create extra files, sample apps, or “helpful” configs that are not in the phase tasks.
+
+## Code discipline
+
+- Do not rewrite working code without a clear bug or an agreed refactor.
+- Do not add libraries unless `architecture.md` already lists them or `memory.md` records a new decision.
+- Keep `frontend/`, `backend/`, `ml/`, `data/`, and `n8n/` separate. No scoring logic in React. No UI in the risk engine.
+- Prefer clear names (`risk_score`, `location_id`, `asha_signals`) over clever abbreviations.
+- Write code a beginner teammate can read. Short modules, comments only where intent is not obvious.
+- Before a major architecture change, explain it in chat and update `memory.md` after agreement.
+
+## Data, privacy, medical claims
+
+- Prototype uses **synthetic data only**. Do not add real patient or identifiable health records.
+- Never introduce names, phones, Aadhaar, household IDs, or person-level GPS.
+- Never claim the product diagnoses disease, confirms an outbreak, or advises treatment.
+- UI and API must keep the synthetic / not-a-diagnosis message.
+
+## ML vs LLM
+
+- The ML/risk engine produces numeric risk, clusters, and factors.
+- An LLM may only explain or summarize **already calculated** results. It must not set the score or name a diagnosis.
+
+## Quality and security
+
+- After code changes, run or add a small test/smoke check for what you touched.
+- Do not commit `.env`, keys, or SQLite files full of generated runs if gitignore says so.
+- No secrets in n8n exports or docs.
+
+## Memory
+
+When a technology or product decision changes, update `memory.md` in the same change.
