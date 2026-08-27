@@ -1,3 +1,5 @@
+import { locations } from './locationData'
+
 /**
  * Static mock data for Phase 1 only.
  * Later phases replace this with FastAPI responses.
@@ -10,7 +12,7 @@ export const LAST_ENGINE_RUN = '27 Aug 2026, 18:00 IST'
 
 export const MODEL_VERSION = 'mock-ui-v1'
 
-export const locations = [
+export const legacyLocations = [
   {
     id: 'loc-rampur',
     villageName: 'Rampur',
@@ -113,7 +115,7 @@ export const alerts = [
   {
     id: 'alert-1',
     location: 'Rampur',
-    locationId: 'loc-rampur',
+    locationId: 'rampur',
     score: 82,
     status: 'Open',
     syndrome: 'Diarrhea',
@@ -123,7 +125,7 @@ export const alerts = [
   {
     id: 'alert-2',
     location: 'Sitapur',
-    locationId: 'loc-sitapur',
+    locationId: 'lakshmipur',
     score: 76,
     status: 'Open',
     syndrome: 'Diarrhea',
@@ -133,7 +135,7 @@ export const alerts = [
   {
     id: 'alert-3',
     location: 'East PHC catchment',
-    locationId: 'loc-phc-east',
+    locationId: 'devgaon',
     score: 71,
     status: 'Acknowledged',
     syndrome: 'Diarrhea',

@@ -23,8 +23,8 @@ Living log of decisions and status. Update this file when an important decision 
 
 ## Current status
 
-**Phase 0 — Project foundation: in progress (documentation and skeleton).**  
-Application development has **not** started. No packages installed, no models, no Azure, no n8n workflows.
+**Phase 2 - Dashboard and map: completed.**  
+Phase 1 frontend foundation and Phase 2 interactive mock-data map are complete. No backend, database, ML model, Azure integration, or n8n workflow has been created.
 
 ---
 
@@ -37,12 +37,14 @@ Application development has **not** started. No packages installed, no models, n
 - `README.md` — project overview
 - `.cursor/rules/project-rules.mdc` — AI-assisted development rules
 - Placeholder directories: `frontend/`, `backend/`, `ml/`, `data/synthetic/`, `n8n/`
+- **Phase 1:** React + Vite + JavaScript + Tailwind frontend foundation, dashboard shell, reusable shared components, static mock data, Alerts and About pages.
+- **Phase 2:** Interactive React Leaflet district map, 8 fictional village locations, selected-location cluster panel, synced risk list, and Recharts 14-day signal trends.
 
 ---
 
 ## Current task
 
-Finish Phase 0: documentation and initial folder structure only. **Do not** scaffold Vite or FastAPI until Phase 1 / Phase 4 respectively.
+Await approval for **Phase 3 - Synthetic health data**. Keep Phase 2 on frontend mock data until then.
 
 ---
 
@@ -72,9 +74,9 @@ Finish Phase 0: documentation and initial folder structure only. **Do not** scaf
 
 | Layer | Choice | Status |
 | --- | --- | --- |
-| Frontend | React, Vite, JavaScript, Tailwind CSS | Chosen, not scaffolded |
-| Maps | React Leaflet | Chosen, not scaffolded |
-| Charts | Recharts | Chosen, not scaffolded |
+| Frontend | React, Vite, JavaScript, Tailwind CSS | Phase 1 complete |
+| Maps | React Leaflet | Phase 2 complete (mock coordinates only) |
+| Charts | Recharts | Phase 2 complete (mock trends only) |
 | Backend | Python FastAPI | Chosen, not scaffolded |
 | Database | SQLite | Chosen, not created |
 | ML | Pandas, NumPy, Scikit-learn; optional XGBoost, SHAP | Chosen, not implemented |

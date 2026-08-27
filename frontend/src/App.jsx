@@ -5,7 +5,8 @@ import DisclaimerBanner from './components/DisclaimerBanner'
 import Dashboard from './pages/Dashboard'
 import Alerts from './pages/Alerts'
 import About from './pages/About'
-import { DISTRICT_NAME, alerts as mockAlerts, locations as mockLocations } from './data/mockData'
+import { DISTRICT_NAME, alerts as mockAlerts } from './data/mockData'
+import { locations as mockLocations } from './data/locationData'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('dashboard')

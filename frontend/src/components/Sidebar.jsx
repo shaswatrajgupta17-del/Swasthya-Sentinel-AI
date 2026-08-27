@@ -16,7 +16,7 @@ function Sidebar({
       <div className="p-4">
         <h2 className="text-sm font-semibold text-sentinel-ink">Context</h2>
         <p className="mt-1 text-xs leading-relaxed text-slate-500">
-          Filters apply to this demo view only. They do not call an API yet (Phase 1).
+          Filters apply to this synthetic demo view only. They do not call an API.
         </p>
 
         {showFilters ? (

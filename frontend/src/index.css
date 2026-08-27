@@ -23,3 +23,7 @@ body {
   color: #0f2a3a;
   font-family: var(--font-sans);
 }
+
+.leaflet-container {
+  font-family: var(--font-sans);
+}
