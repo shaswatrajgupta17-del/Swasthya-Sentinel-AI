@@ -168,3 +168,32 @@ Touch targets ≥ 44px on mobile. Do not hide the disclaimer on small screens.
 - Do not convey risk by colour alone.
 - Reduced-motion: respect `prefers-reduced-motion` for chart animation (Phase 1–2 can skip fancy motion entirely).
 - Language: plain English; expand acronyms on first view (ASHA, OPD, PHC).
+
+---
+
+## 13. Prototype demo experience
+
+The dashboard should be designed for a **5-minute SIH demonstration**. Spoken lines live in `DEMO_SCRIPT.md`; this section is what the **UI must make obvious** without extra slides.
+
+**Demo flow:**
+
+| Step | What happens on screen |
+| --- | --- |
+| 1 | Officer opens the dashboard (map-first command centre). |
+| 2 | Synthetic-data disclaimer is visible (banner + badge). |
+| 3 | Map shows village risk distribution (Low / Watch / High). |
+| 4 | Officer clicks a **high-risk cluster**. |
+| 5 | System displays: risk score, risk category, contributing factors, trend chart, cluster information. |
+| 6 | An **alert** is visible (list and/or generated notification path). |
+| 7 | System explains in plain language that **risk increased because multiple signals changed together** — not because of a named diagnosis. |
+
+Example explanation line (template, driven by factors): *“Risk increased because multiple signals changed together.”*
+
+**Design goal:**
+
+- Immediate understanding (hotspot is obvious in seconds)
+- Strong visual storytelling (map → score → why → alert)
+- Trust (disclaimer, no fake confirmation language)
+- Explainability (factors and chart match the colour)
+
+The evaluator should understand the innovation **without reading technical documentation**.

@@ -6,15 +6,39 @@ This document describes the **planned** system. No application code is implement
 
 ## 1. Overall architecture
 
-Swasthya Sentinel AI is a **three-layer college prototype**:
+Swasthya Sentinel AI is a **modular college prototype**. Data is generated, stored, scored, then shown and optionally alerted.
 
 ```
-[Synthetic CSVs] → [FastAPI + SQLite + ML risk engine]
-                         ↓
-              [React dashboard: map, charts, alerts]
-                         ↓
-              [n8n: threshold notifications]     [Azure: optional host / LLM summary]
+Synthetic Data Generator
+          |
+          ↓
+Synthetic Health Data (CSV)
+          |
+          ↓
+SQLite Database
+          |
+          ↓
+FastAPI API Layer
+          |
+   ----------------------------
+   |             |             |
+   ↓             ↓             ↓
+React UI     ML Risk       n8n Automation
+Dashboard    Engine        Alerts
+                |
+                ↓
+        Azure AI (Optional)
+        Explanation Layer
 ```
+
+**Who does what:**
+
+- **React** is responsible only for visualization (map, charts, disclaimers). It does not calculate risk.
+- **FastAPI** handles APIs and application logic (read/write SQLite, call the engine, create alerts).
+- **SQLite** stores prototype data (locations, signals, scores, alerts).
+- **ML engine** calculates numerical risk scores, clusters, and factor weights.
+- **n8n** handles workflow automation (notify when a high-risk alert exists).
+- **Azure AI is optional** and only explains **already calculated** factors. It must not set the score or diagnose.
 
 **Hard split of intelligence:**
 
@@ -26,6 +50,42 @@ Swasthya Sentinel AI is a **three-layer college prototype**:
 | Frontend | Visualize API data + disclaimers | Hide synthetic/demo nature |
 
 All demo data is **synthetic**. The API should advertise `data_mode: "synthetic"` on health and summary endpoints.
+
+---
+
+## Architecture principles
+
+The system prioritizes:
+
+- **Explainability over complexity** — a weighted, inspectable score beats a black-box model the jury cannot question
+- **Privacy over detailed personal information** — village/PHC aggregates only; no person-level records
+- **Modular development** — frontend, API, database, ML, n8n, and Azure stay in separate folders and roles
+- **Beginner-friendly maintainability** — JavaScript frontend, clear Python modules, documented weights
+- **Clear separation between prediction and explanation** — the engine predicts (scores); UI/LLM only explain those scores
+- **Synthetic data for demonstration** — no real rural healthcare extracts
+- **Scalable future design** — SQLite and batch scoring now; the same API shape could later sit in front of a real warehouse
+
+---
+
+## Data generation layer
+
+Real rural healthcare data is unavailable for this college project and would be sensitive if it were. The prototype therefore uses a **synthetic data generator** (scripts under `data/` / Phase 3) that writes CSV files, which are then loaded into SQLite.
+
+The generator creates **aggregated** (not person-level) series:
+
+- ASHA worker aggregated reports (syndrome counts by village and day)
+- OPD symptom counts (facility-level)
+- Pharmacy sales trends (e.g. ORS, antipyretics)
+- Environmental indicators (e.g. rainfall, water-risk index)
+
+It should include:
+
+- **Normal baseline periods** — typical day-to-day variation
+- **Abnormal outbreak-like periods** — a planted rise so the demo has a clear hotspot
+- **Geographic clusters** — neighbouring villages moving together, not one isolated spike
+- **Seasonal variations** — mild background change so baselines are not a flat line
+
+**Purpose:** demonstrate early-warning *capability* (unusual clustered signals) without using private healthcare information.
 
 ---
 
@@ -80,6 +140,35 @@ Do not expose endpoints that accept real patient identifiers.
 
 ---
 
+## API layer
+
+All user-facing reads go through REST. Nothing in the browser talks to SQLite or to `ml/` directly.
+
+```
+React Dashboard
+        |
+        |
+     REST API
+        |
+        |
+    FastAPI Services
+        |
+ -------------------------
+ |           |            |
+Database   ML Engine    n8n
+```
+
+**Rules:**
+
+- The frontend **never** directly accesses the database.
+- The frontend **never** contains ML logic (no scoring in React).
+- The backend **only serves calculated results** (and triggers a recompute in a guarded dev endpoint). It does not invent a score in the router.
+- The **ML engine remains independent** (`ml/`). FastAPI imports it; n8n and React do not.
+
+Indicative routes stay in the table above. Early UI phases may use mock JSON until this layer exists; then mocks are removed.
+
+---
+
 ## 4. Database architecture
 
 **Engine:** SQLite file, e.g. `data/sentinel.db` (gitignored when it contains generated runs; seed scripts live in git).
@@ -105,6 +194,37 @@ Do not expose endpoints that accept real patient identifiers.
 
 **Stack:** Python, Pandas, NumPy, Scikit-learn. XGBoost and SHAP only if they improve a **measurable** demo (clearer planted-cluster ranking or clearer factor chart). Do not add them “for the resume.”
 
+The prototype uses a **two-stage** approach.
+
+### Stage 1 — Transparent risk scoring (required)
+
+A documented weighted sum that a beginner can explain on stage:
+
+```
+Risk Score =
+  40% symptom anomaly
++ 25% pharmacy signal increase
++ 20% environmental factors
++ 15% historical pattern
+```
+
+Weights can be tuned slightly for the planted cluster, but they must stay written down (`model_version` + this formula). Symptom anomaly covers ASHA + OPD unusualness vs baseline. “Historical pattern” is persistence (elevated for several days), not a secret model.
+
+### Stage 2 — Machine learning improvement (optional)
+
+Only if Stage 1 already works and there is time:
+
+- Random Forest or XGBoost for ranking locations
+- Isolation Forest for anomaly features
+
+Stage 2 must still output a 0–100 score **and** factor contributions that match the UI. It must not replace Stage 1 with an unexplained number.
+
+### Explainability
+
+- Always: feature contribution list (which signals moved, by how much)
+- SHAP: only if a tree model is used in Stage 2
+- **Priority: explainability is more important than black-box accuracy.**
+
 **Pipeline (batch, not streaming in MVP):**
 
 1. Load aggregates from SQLite or CSV.
@@ -114,7 +234,7 @@ Do not expose endpoints that accept real patient identifiers.
 5. **Combine** into `score_0_100` with documented weights (store `model_version`).
 6. Write `risk_scores` and `risk_factors`.
 
-**Explainability:** Phase 6 writes the top 3–5 factors per score. SHAP is optional on a tree model; a transparent weighted sum is acceptable and often clearer for jury questions.
+Phase 6 writes the top 3–5 factors per score into `risk_factors`. The UI (and optional Azure summary) must use those rows, not a separate guess.
 
 **Code home:** `ml/` — importable from FastAPI `services`, not copied into React.
 
@@ -195,6 +315,7 @@ Swasthya-Sentinel-AI/
 ├── design.md
 ├── phases.md
 ├── memory.md
+├── DEMO_SCRIPT.md
 ├── README.md
 ├── .cursor/rules/project-rules.mdc
 ├── frontend/                 # React + Vite (created in Phase 1)

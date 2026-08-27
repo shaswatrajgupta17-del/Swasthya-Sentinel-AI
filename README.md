@@ -1,61 +1,109 @@
 # Swasthya Sentinel AI
 
-Privacy-conscious **college prototype** for **SIH2026-STATE-04**: early disease **cluster** detection from fragmented rural health signals.
+Privacy-conscious **college prototype** for **SIH2026-STATE-04**.
 
 **This is not a medical device.** It does not diagnose patients, confirm outbreaks, or replace public health professionals. Demo data is **synthetic**.
 
 ---
 
+## Overview
+
+A privacy-conscious **early warning** platform that detects unusual rural health patterns from **fragmented signals** (ASHA reports, OPD logs, pharmacy trends, environment), shows **geographic clusters**, and explains a **numeric risk score** — without using real patient records.
+
+---
+
 ## Problem
 
-Outbreak-like indicators can show up in ASHA reports, OPD symptom logs, pharmacy sales, and environmental data **before** a formal outbreak is declared. Those sources are usually disconnected, so district teams see fragments instead of a geographic pattern.
+**SIH2026-STATE-04 — Early Disease Cluster Detection from Fragmented Rural Health Signals.**
+
+Outbreak indicators can appear across disconnected sources before an outbreak is formally confirmed. District teams often see pieces (a notebook here, a chemist spike there) instead of one map. Waiting for lab confirmation is too late for *early* action; acting on a black-box “AI diagnosis” is not acceptable either.
 
 ---
 
 ## Solution
 
-Swasthya Sentinel AI combines **synthetic** village-level signals, scores **unusual clustered activity**, shows results on a **map**, explains **why** the score is high, and can **alert** a demo authority channel (n8n).
+Swasthya Sentinel AI (prototype):
 
-The **ML/risk engine** produces numbers. An LLM, if used later, may only **summarize those numbers** — it must not invent a diagnosis.
+1. **Data aggregation** — synthetic village-level ASHA, OPD, pharmacy, and environmental series in SQLite  
+2. **Risk assessment** — transparent weighted score (optional ML later), not a clinical diagnosis  
+3. **Geographic clustering** — neighbouring unusual locations grouped on a map  
+4. **Explainable alerts** — factors + optional n8n notification; optional Azure text only restates those factors  
 
----
-
-## Features (planned)
-
-- District dashboard with React Leaflet map and risk bands (Low / Watch / High)
-- Ranked locations and cluster membership
-- Charts of ASHA / OPD / pharmacy / environment series (Recharts)
-- FastAPI + SQLite persistence
-- Risk scores, contributing factors, and alerts
-- Optional n8n notifications and optional Azure hosting/explanation
-
-**MVP vs later:** see `PRD.md`.
+The **ML/risk engine** produces numbers. An LLM, if used, may only **summarize those numbers**.
 
 ---
 
-## Architecture (short)
+## Key features
+
+- **Risk map** — village/PHC markers, Low / Watch / High  
+- **Cluster detection** — spatial grouping of unusual activity  
+- **Explainable scoring** — 40% symptom anomaly, 25% pharmacy, 20% environment, 15% historical pattern (Stage 1)  
+- **Alert workflow** — in-app alerts; n8n as P1  
+- **Scenario simulation** — planted baseline vs outbreak-like periods in synthetic data  
+- **Privacy-first architecture** — aggregates only; no person-level health information  
+
+MVP vs later: `PRD.md`. Demo walkthrough: `DEMO_SCRIPT.md`.
+
+---
+
+## Technology stack
+
+**Frontend:** React, Vite, JavaScript, Tailwind CSS, React Leaflet, Recharts  
+
+**Backend:** Python FastAPI, SQLite  
+
+**ML:** Python, Pandas, NumPy, Scikit-learn (XGBoost / Isolation Forest / SHAP only if justified)  
+
+**Automation:** n8n (P1)  
+
+**Cloud:** Azure (optional — hosting and/or explanation summary)
+
+---
+
+## Architecture overview
 
 ```
-Synthetic CSVs → SQLite → ML risk engine → FastAPI → React dashboard
-                                      ↘ n8n alerts
-                                      ↘ optional Azure LLM summary of factors
+Synthetic Data Generator → CSV → SQLite → FastAPI
+                                |      |      |
+                                ↓      ↓      ↓
+                         React UI   ML Risk  n8n alerts
+                                    Engine
+                                      ↓
+                              Azure AI (optional explain)
 ```
 
-Details: `architecture.md`. UI: `design.md`. Build order: `phases.md`.
+React visualizes. FastAPI serves. SQLite stores. ML scores. n8n notifies. Azure never diagnoses.
+
+Full design: `architecture.md`. UI: `design.md`.
 
 ---
 
-## Tech stack
+## Prototype limitations
 
-| Area | Technology |
-| --- | --- |
-| Frontend | React, Vite, JavaScript, Tailwind CSS |
-| Maps / charts | React Leaflet, Recharts |
-| Backend | Python, FastAPI |
-| Database | SQLite |
-| ML | Pandas, NumPy, Scikit-learn (XGBoost/SHAP if justified) |
-| Automation | n8n |
-| Cloud | Azure only where it adds value |
+- **Synthetic data only** — not real ASHA/IDSP extracts  
+- **Not medical diagnosis** — no named disease for a person, no treatment advice  
+- **Not a production healthcare system** — SQLite, local demo, no government-scale security certification  
+
+---
+
+## Development roadmap
+
+See `phases.md`. **P0** must ship for SIH. **P1** = n8n and Azure. Do not start Phase 1 until the team approves.
+
+---
+
+## Team development structure
+
+| Team | Owns | Folder |
+| --- | --- | --- |
+| **Frontend** | Dashboard, map, charts, disclaimer | `frontend/` |
+| **Backend** | FastAPI, SQLite, seed, REST | `backend/` |
+| **ML** | Risk score, clusters, factors | `ml/` |
+| **AI / cloud** | Optional Azure summary/hosting; prompt must not diagnose | Phase 8 only |
+| **Automation** | n8n alert workflows | `n8n/` |
+| **Everyone** | Docs; update `memory.md` when decisions change | Root `*.md` |
+
+**Working agreement:** one phase at a time. No extra libraries without a note in `memory.md`. Synthetic data only.
 
 ---
 
@@ -63,28 +111,13 @@ Details: `architecture.md`. UI: `design.md`. Build order: `phases.md`.
 
 Not available yet. After Phase 1+:
 
-1. **Frontend:** `cd frontend` → install dependencies → `npm run dev`
-2. **Backend:** create a Python virtualenv in `backend` → install dependencies → `uvicorn` as documented in that phase
-3. **Data:** seed from `data/synthetic/`
-4. **ML:** run the risk engine, then refresh the dashboard
-5. **n8n / Azure:** optional; the local demo should work without them
+1. **Frontend:** `cd frontend` → install dependencies → `npm run dev`  
+2. **Backend:** Python virtualenv in `backend` → `uvicorn` as documented in that phase  
+3. **Data:** seed from `data/synthetic/`  
+4. **ML:** run the risk engine, then refresh the dashboard  
+5. **n8n / Azure:** optional (P1); local demo should work without them  
 
-Exact commands will be added when those phases land. Do not expect `npm` or `pip` to work in Phase 0.
-
----
-
-## Team contribution structure
-
-| Path | Owner focus |
-| --- | --- |
-| `frontend/` | UI, map, charts |
-| `backend/` | API, SQLite, seed |
-| `ml/` | Scoring, clustering, factors |
-| `data/synthetic/` | Demo CSVs and data dictionary |
-| `n8n/` | Alert workflows |
-| Root `*.md` | Product and architecture (everyone reads; update `memory.md` on decisions) |
-
-**Working agreement:** follow `phases.md`. Do not mix a new library in without a note in `memory.md`. Keep modules separate. Use synthetic data only.
+Exact commands will be added when those phases land.
 
 ---
 
@@ -95,6 +128,7 @@ Exact commands will be added when those phases land. Do not expect `npm` or `pip
 | `PRD.md` | Problem, users, MVP, privacy, success |
 | `architecture.md` | System design |
 | `design.md` | UI/UX |
-| `phases.md` | Phase 0–10 |
+| `phases.md` | Phase 0–10 and P0/P1 |
+| `DEMO_SCRIPT.md` | 5-minute SIH talk track |
 | `memory.md` | Decisions and status |
 | `.cursor/rules/project-rules.mdc` | Rules for AI-assisted coding |

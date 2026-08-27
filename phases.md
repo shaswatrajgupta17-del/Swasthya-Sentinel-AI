@@ -6,13 +6,52 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ---
 
+## Development priority
+
+| Level | Meaning |
+| --- | --- |
+| **P0** | Must complete for the SIH prototype. |
+| **P1** | Important improvements. Ship if time allows; the local demo should still work without them. |
+| **P2** | Optional enhancements (not in the default roadmap). |
+
+| Phase | Priority |
+| --- | --- |
+| 0 Project foundation | **P0** |
+| 1 UI/UX and design system | **P0** |
+| 2 Dashboard and map | **P0** |
+| 3 Synthetic health data | **P0** |
+| 4 Backend and database | **P0** |
+| 5 ML / risk engine | **P0** |
+| 6 Explainability | **P0** |
+| 7 n8n automation | **P1** |
+| 8 Azure integration | **P1** |
+| 9 Integration and testing | **P0** |
+| 10 Deployment and demonstration | **P0** |
+
+If time is short, skip P1 (n8n, Azure) and still complete a map + score + factors demo. Keep `DEMO_SCRIPT.md` in sync with what you actually built.
+
+### Recommended file: `DEMO_SCRIPT.md`
+
+Keep a **5-minute SIH presentation flow** at the repo root (`DEMO_SCRIPT.md`). Update it in Phase 10 so timings match the live UI. Outline:
+
+- **0:00** — Problem: fragmented rural health signals  
+- **1:00** — Dashboard as command centre  
+- **2:00** — Cluster: map hotspot, risk score, location details  
+- **3:00** — Explainability: ASHA, OPD, pharmacy moving together  
+- **4:00** — Alert workflow (n8n if P1 is done; otherwise in-app alert list)  
+- **5:00** — Innovation: privacy, synthetic data, early warning, explainable AI  
+
+---
+
 ## Phase 0 — Project foundation
+
+**Priority:** P0
 
 **Goal:** Shared understanding, repo hygiene, and empty module folders. No application runtime yet.
 
 **Tasks:**
 
-- Keep PRD, architecture, design, phases, memory, README, and Cursor rules as the source of truth.
+- Keep PRD, architecture, design, phases, memory, README, `DEMO_SCRIPT.md`, and Cursor rules as the source of truth.
 - Confirm folder placeholders: `frontend/`, `backend/`, `ml/`, `data/synthetic/`, `n8n/`.
 - Add a `.gitignore` when the first code phase starts (node_modules, venv, `.env`, `*.db`).
 - Do not install packages, train models, or provision Azure in this phase.
@@ -26,6 +65,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 ---
 
 ## Phase 1 — UI/UX and design system
+
+**Priority:** P0
 
 **Goal:** Tailwind tokens and reusable presentational components with **static mock data**.
 
@@ -45,6 +86,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 ---
 
 ## Phase 2 — Dashboard and map
+
+**Priority:** P0
 
 **Goal:** Map-first dashboard using mock GeoJSON/JSON.
 
@@ -66,6 +109,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ## Phase 3 — Synthetic health data
 
+**Priority:** P0
+
 **Goal:** A small, story-driven dataset with at least one planted cluster.
 
 **Tasks:**
@@ -86,6 +131,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ## Phase 4 — Backend and database
 
+**Priority:** P0
+
 **Goal:** FastAPI + SQLite serving locations, signals, and placeholder risk rows.
 
 **Tasks:**
@@ -105,11 +152,13 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ## Phase 5 — ML / risk engine
 
+**Priority:** P0
+
 **Goal:** Numeric scores and cluster IDs written to SQLite.
 
 **Tasks:**
 
-- Implement `ml/` pipeline: baseline, anomaly, spatial grouping, corroboration, 0–100 score.
+- Implement `ml/` pipeline: Stage 1 transparent weights (see `architecture.md`), baseline, spatial grouping, 0–100 score.
 - Store `model_version` and persist `risk_scores`.
 - Wire `POST /internal/run-risk` (dev) or a CLI `python -m ml.run`.
 - Map colours use engine output, not hand-painted mock scores.
@@ -123,6 +172,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 ---
 
 ## Phase 6 — Explainability
+
+**Priority:** P0
 
 **Goal:** Every score has inspectable reasons.
 
@@ -143,6 +194,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ## Phase 7 — n8n automation
 
+**Priority:** P1
+
 **Goal:** One alert path for high scores.
 
 **Tasks:**
@@ -160,6 +213,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 ---
 
 ## Phase 8 — Azure integration
+
+**Priority:** P1
 
 **Goal:** Use Azure only if it helps hosting or **summarizing existing factors**.
 
@@ -179,6 +234,8 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ## Phase 9 — Integration and testing
 
+**Priority:** P0
+
 **Goal:** End-to-end demo path is reliable.
 
 **Tasks:**
@@ -186,10 +243,10 @@ This is a college prototype. Prefer a working slice over extra libraries.
 - Seed → engine → API → map → alert list → (optional) n8n.
 - Fix CORS, empty states, engine-not-run state.
 - Basic backend tests for scoring invariants (planted cluster > quiet village).
-- Frontend smoke: disclaimer, map load, detail panel.
+- Frontend smoke: disclaimer, map load, detail panel (matches `design.md` demo flow).
 - Confirm no diagnosis claims in UI copy.
 
-**Expected output:** Short test notes or pytest files; demo script in README.
+**Expected output:** Short test notes or pytest files; `DEMO_SCRIPT.md` still accurate.
 
 **Dependencies:** Phases 4–7 (8 if used).
 
@@ -199,11 +256,13 @@ This is a college prototype. Prefer a working slice over extra libraries.
 
 ## Phase 10 — Deployment and demonstration
 
+**Priority:** P0
+
 **Goal:** Repeatable SIH presentation.
 
 **Tasks:**
 
-- Demo script: problem, map, planted cluster, explanation, alert, limitations.
+- Finalize `DEMO_SCRIPT.md` (problem, map, planted cluster, explanation, alert, limitations).
 - Freeze a seed + `model_version`.
 - Optional public URL (Azure/other) if required by the event.
 - Record known issues in `memory.md`.
@@ -224,4 +283,4 @@ This is a college prototype. Prefer a working slice over extra libraries.
                      8 optional
 ```
 
-Phase 3 should finish before Phase 4 seed. Phase 8 may be skipped.
+Phase 3 should finish before Phase 4 seed. Phases 7–8 are P1 and may be skipped.
