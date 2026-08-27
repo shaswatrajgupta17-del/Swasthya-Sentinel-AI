@@ -1,0 +1,11 @@
+# Dependencies and local artefacts
+node_modules/
+dist/
+.venv/
+venv/
+.env
+.env.*
+*.db
+*.sqlite
+.DS_Store
+Thumbs.db
