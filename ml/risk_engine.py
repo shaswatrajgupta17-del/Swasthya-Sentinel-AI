@@ -220,9 +220,9 @@ def extract_risk_factors(scored_df: pd.DataFrame, window_days: int = 7) -> dict[
             opd_pts = round(anom_total_pts / 3.0, 1)
             pharm_pts = round(anom_total_pts / 3.0, 1)
 
-        corrob_pts = round(WEIGHT_CORROBORATION * float(row["corroboration_score"]), 1)
-        spatial_pts = round(WEIGHT_SPATIAL * float(row["spatial_score"]), 1)
-        env_pts = round(WEIGHT_ENVIRONMENT * float(row["env_score"]), 1)
+        corrob_pts = WEIGHT_CORROBORATION * float(row["corroboration_score"])
+        spatial_pts = WEIGHT_SPATIAL * float(row["spatial_score"])
+        env_pts = WEIGHT_ENVIRONMENT * float(row["env_score"])
 
         # Baseline expected counts for factual notes
         asha_exp = int(round(float(row["asha_baseline_median"]) * window_days))
@@ -283,7 +283,12 @@ def extract_risk_factors(scored_df: pd.DataFrame, window_days: int = 7) -> dict[
         ]
 
         factor_list = []
-        for name, pts, note in raw_factors:
+        rounded_points = [round(pts, 1) for _, pts, _ in raw_factors]
+        rounding_adjustment = round(total_score - sum(rounded_points), 1)
+        if rounding_adjustment:
+            rounded_points[-1] = round(rounded_points[-1] + rounding_adjustment, 1)
+
+        for (name, _, note), pts in zip(raw_factors, rounded_points):
             pct = round((pts / total_score) * 100.0, 1) if total_score > 0 else 0.0
             factor_list.append({
                 "factor_name": name,
