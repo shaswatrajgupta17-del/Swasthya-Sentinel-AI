@@ -25,16 +25,18 @@ Living log of decisions and status. Update this file when an important decision 
 | 2026-08-28 | Phase 6 uses deterministic weighted factor decomposition persisted in `risk_factors` | Keeps UI explanations tied to the Phase 5 score without adding SHAP or an LLM |
 | 2026-08-28 | Phase 7 uses n8n polling with `GET /alerts?status=open` and a configurable demo webhook | Keeps notification delivery optional while preserving the local app when n8n is unavailable |
 | 2026-08-28 | Phase 8 defers Azure; the project will use the local Vite + FastAPI + SQLite demo path | Azure hosting and LLM summarization add external configuration without improving this synthetic prototype; risk scores and factor explanations are already complete locally |
+| 2026-08-28 | Phase 9 adds a repeatable local integration check at `scripts/verify_phase9.py` | Verifies seed/score/API invariants without adding a test dependency or external service |
 
 ---
 
 ## Current status
 
-**Phase 8 — Azure integration: completed by deferral.**
+**Phase 9 — Integration and testing: completed.**
 The risk engine (`ml/`) computes transparent 0–100 risk scores from SQLite synthetic health signals. Features are extracted at location $\times$ 7-day scoring window relative to a 30-day baseline. Anomaly ratios, multi-source corroboration (ASHA, OPD, Pharmacy, Environment), and DBSCAN spatial clustering ($eps=2.5\text{ km}, min\_samples=2$) are calculated and combined using documented weights. The planted synthetic cluster (Lakshmipur, Rampur, Devgaon) ranks High ($\approx 98.6/100$, Cluster `C1`) and generates 3 High severity alerts. Baseline locations remain Low ($0.7 - 2.1$). Scores and alerts are persisted to SQLite idempotently and served via FastAPI (`/risks`, `/alerts`, `/internal/run-risk`). The React frontend dashboard reflects live risk values, real map marker colors, and active alerts.
 Phase 6 adds six deterministic, data-driven factor contributions per risk score (`risk_factors`), factual notes using the same baseline ratios and component scores, API exposure on both risk endpoints, and dashboard contribution bars sourced from API values. Rounded persisted factor contributions reconcile exactly to each score. High-risk and low-risk locations both return inspectable explanations while retaining cluster and model metadata.
 Phase 7 adds the exported n8n polling workflow under `n8n/`. It reads open alerts, filters the existing High threshold (`score >= 70`), and posts a demo notification containing location, score, cluster, and top factor context to an environment-configured webhook. n8n remains optional and does not affect scoring, the API, or the dashboard.
 Phase 8 selects Option A from `phases.md`: Azure is deferred and the local Vite + FastAPI + SQLite path remains the demo deployment. No Azure credentials, SDK, hosting configuration, or LLM summary endpoint is added. Existing risk factors remain the sole explanation source.
+Phase 9 adds the repeatable local verification script, an explicit engine-not-run dashboard state, current run instructions, and end-to-end checks for seed, risk engine, API, map, alerts, factors, n8n compatibility, and non-diagnostic copy. Phase 10 has not started.
 
 ---
 
@@ -55,12 +57,13 @@ Phase 8 selects Option A from `phases.md`: Azure is deferred and the local Vite 
 - **Phase 6:** Deterministic six-factor decomposition from the Phase 5 components, persisted `risk_factors`, risk API factor responses, explainability panel with backend-driven contribution bars and notes, exact score/contribution reconciliation, and preserved cluster/model metadata.
 - **Phase 7:** n8n polling workflow export, enriched alert API payload with score and top factors, open-alert status filter, and documented demo notification setup with no credentials.
 - **Phase 8:** Azure deferral decision documented; local demo remains the supported deployment path and no external service is required.
+- **Phase 9:** Local integration verification script, engine-not-run state, updated run instructions, and verified seed → engine → API → frontend demo path.
 
 ---
 
 ## Current task
 
-Phase 8 Azure decision is complete. Do not start Phase 9 until explicitly requested.
+Phase 9 integration and testing is complete. Do not start Phase 10 until explicitly requested.
 
 ---
 

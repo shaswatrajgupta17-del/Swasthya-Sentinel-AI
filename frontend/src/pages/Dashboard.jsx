@@ -71,6 +71,7 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
   const selected = apiLocations.find((location) => location.id === selectedId) || apiLocations[0]
   const rankedLocations = [...apiLocations].sort((a, b) => b.riskScore - a.riskScore)
   const highestScore = Math.max(0, ...apiLocations.map((location) => location.riskScore))
+  const riskEngineReady = risks.some((risk) => risk.model_version === 'phase5-v1')
 
   if (loading) {
     return <EmptyState title="Loading synthetic district..." message="Retrieving aggregate locations, calculated risks, and signal summary from FastAPI." />
@@ -78,6 +79,10 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
 
   if (error) {
     return <EmptyState title="Backend unavailable. Start FastAPI server." message="Run `python backend/seed_database.py`, then `python -m ml.run`, then `uvicorn backend.app.main:app --reload`, and refresh this page." />
+  }
+
+  if (!riskEngineReady) {
+    return <EmptyState title="Risk engine has not run" message="Synthetic locations are ready. Run `python -m ml.run`, then refresh this page to load calculated scores, clusters, alerts, and explanations." />
   }
 
   return (

@@ -107,18 +107,15 @@ See `phases.md`. **P0** must ship for SIH. **P1** = n8n and Azure. Do not start 
 
 ---
 
-## How to run (later)
+## How to run locally
 
-Not available yet. After Phase 1+:
-
-1. **Frontend:** `cd frontend` → install dependencies → `npm run dev`  
-2. **Backend:** Python virtualenv in `backend` → `uvicorn` as documented in that phase  
-3. **Data:** seed from `data/synthetic/`  
-4. **ML:** run the risk engine, then refresh the dashboard  
-5. **n8n:** import `n8n/high-risk-alert-poll.json`, configure `SENTINEL_NOTIFICATION_WEBHOOK_URL`, and activate the workflow. It polls `/alerts?status=open`, filters scores at least 70, and posts location, score, and top factors. The app works when n8n is stopped.
-6. **Azure:** deferred for this synthetic prototype; no Azure credentials or runtime are required
-
-Exact commands will be added when those phases land.
+1. **Seed:** `python backend/seed_database.py`
+2. **Score:** `python -m ml.run`
+3. **Backend:** `python -m uvicorn backend.app.main:app --reload`
+4. **Frontend:** `npm run dev --prefix frontend`
+5. **Verify:** with FastAPI running, `python scripts/verify_phase9.py --api-url http://127.0.0.1:8000`
+6. **n8n:** optionally import `n8n/high-risk-alert-poll.json`, configure `SENTINEL_NOTIFICATION_WEBHOOK_URL`, and activate the workflow. It polls `/alerts?status=open`, filters scores at least 70, and posts location, score, and top factors. The app works when n8n is stopped.
+7. **Azure:** deferred for this synthetic prototype; no Azure credentials or runtime are required
 
 ---
 
