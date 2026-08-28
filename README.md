@@ -38,7 +38,7 @@ The **ML/risk engine** produces numbers. An LLM, if used, may only **summarize t
 - **Risk map** — village/PHC markers, Low / Watch / High  
 - **Cluster detection** — spatial grouping of unusual activity  
 - **Explainable scoring** — 40% symptom anomaly, 25% pharmacy, 20% environment, 15% historical pattern (Stage 1)  
-- **Alert workflow** — in-app alerts; n8n as P1  
+- **Alert workflow** — in-app alerts plus an optional n8n polling notification flow
 - **Scenario simulation** — planted baseline vs outbreak-like periods in synthetic data  
 - **Privacy-first architecture** — aggregates only; no person-level health information  
 
@@ -54,7 +54,7 @@ MVP vs later: `PRD.md`. Demo walkthrough: `DEMO_SCRIPT.md`.
 
 **ML:** Python, Pandas, NumPy, Scikit-learn (XGBoost / Isolation Forest / SHAP only if justified)  
 
-**Automation:** n8n (P1)  
+**Automation:** n8n (P1, exported workflow under `n8n/`)
 
 **Cloud:** Azure (optional — hosting and/or explanation summary)
 
@@ -115,7 +115,8 @@ Not available yet. After Phase 1+:
 2. **Backend:** Python virtualenv in `backend` → `uvicorn` as documented in that phase  
 3. **Data:** seed from `data/synthetic/`  
 4. **ML:** run the risk engine, then refresh the dashboard  
-5. **n8n / Azure:** optional (P1); local demo should work without them  
+5. **n8n:** import `n8n/high-risk-alert-poll.json`, configure `SENTINEL_NOTIFICATION_WEBHOOK_URL`, and activate the workflow. It polls `/alerts?status=open`, filters scores at least 70, and posts location, score, and top factors. The app works when n8n is stopped.
+6. **Azure:** optional (P1); local demo should work without it
 
 Exact commands will be added when those phases land.
 

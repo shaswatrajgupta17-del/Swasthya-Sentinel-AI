@@ -23,14 +23,16 @@ Living log of decisions and status. Update this file when an important decision 
 | 2026-08-28 | Phase 4 frontend integration: all pages (Dashboard, Alerts) self-fetch from FastAPI; no mock data used at runtime | Completes Phase 4 completion criterion: UI reads DB-backed data |
 | 2026-08-28 | Phase 5 ML / Risk Engine: 0–100 deterministic score with 40% anomaly, 30% corroboration, 20% spatial DBSCAN, 10% environment | Transparent, repeatable statistical scoring; planted cluster ranked High ($\approx 98.6$); 3 High-Risk alerts generated |
 | 2026-08-28 | Phase 6 uses deterministic weighted factor decomposition persisted in `risk_factors` | Keeps UI explanations tied to the Phase 5 score without adding SHAP or an LLM |
+| 2026-08-28 | Phase 7 uses n8n polling with `GET /alerts?status=open` and a configurable demo webhook | Keeps notification delivery optional while preserving the local app when n8n is unavailable |
 
 ---
 
 ## Current status
 
-**Phase 6 — Explainability: completed.**
+**Phase 7 — n8n automation: completed.**
 The risk engine (`ml/`) computes transparent 0–100 risk scores from SQLite synthetic health signals. Features are extracted at location $\times$ 7-day scoring window relative to a 30-day baseline. Anomaly ratios, multi-source corroboration (ASHA, OPD, Pharmacy, Environment), and DBSCAN spatial clustering ($eps=2.5\text{ km}, min\_samples=2$) are calculated and combined using documented weights. The planted synthetic cluster (Lakshmipur, Rampur, Devgaon) ranks High ($\approx 98.6/100$, Cluster `C1`) and generates 3 High severity alerts. Baseline locations remain Low ($0.7 - 2.1$). Scores and alerts are persisted to SQLite idempotently and served via FastAPI (`/risks`, `/alerts`, `/internal/run-risk`). The React frontend dashboard reflects live risk values, real map marker colors, and active alerts.
 Phase 6 adds six deterministic, data-driven factor contributions per risk score (`risk_factors`), factual notes using the same baseline ratios and component scores, API exposure on both risk endpoints, and dashboard contribution bars sourced from API values. Rounded persisted factor contributions reconcile exactly to each score. High-risk and low-risk locations both return inspectable explanations while retaining cluster and model metadata.
+Phase 7 adds the exported n8n polling workflow under `n8n/`. It reads open alerts, filters the existing High threshold (`score >= 70`), and posts a demo notification containing location, score, cluster, and top factor context to an environment-configured webhook. n8n remains optional and does not affect scoring, the API, or the dashboard.
 
 ---
 
@@ -49,12 +51,13 @@ Phase 6 adds six deterministic, data-driven factor contributions per risk score 
 - **Phase 4:** FastAPI routers, SQLAlchemy SQLite models, repeatable database seeding from Phase 3 CSVs, placeholder `risk_scores`. Frontend API layer (`api.js`) with `getLocations`, `getRisks`, `getAlerts`, `getSignalsSummary`. Dashboard and Alerts pages fully wired to FastAPI - loading states, error states, and synthetic-data disclaimers on all screens.
 - **Phase 5:** ML risk engine (`ml/features.py`, `ml/risk_engine.py`, `ml/run.py`), statistical anomaly calculation, DBSCAN spatial clustering, deterministic 0–100 scoring (`phase5-v1`), SQLite persistence, high-risk alert generation for scores $\ge 70$, backend API endpoints (`/risks`, `/alerts`, `/internal/run-risk`), and frontend dashboard integration.
 - **Phase 6:** Deterministic six-factor decomposition from the Phase 5 components, persisted `risk_factors`, risk API factor responses, explainability panel with backend-driven contribution bars and notes, exact score/contribution reconciliation, and preserved cluster/model metadata.
+- **Phase 7:** n8n polling workflow export, enriched alert API payload with score and top factors, open-alert status filter, and documented demo notification setup with no credentials.
 
 ---
 
 ## Current task
 
-Phase 6 explainability is complete. Do not start Phase 7 until explicitly requested.
+Phase 7 n8n automation is complete. Do not start Phase 8 until explicitly requested.
 
 ---
 
@@ -68,7 +71,7 @@ Phase 6 explainability is complete. Do not start Phase 7 until explicitly reques
 ## Future decisions
 
 - Phase 6: rule-based factor contributions selected; SHAP was not justified for the transparent weighted prototype
-- Phase 7: webhook vs cron poll
+- Phase 7: cron-style n8n polling selected; alerts remain available in-app if n8n is down
 - Phase 8: skip Azure vs host vs LLM summary
 
 ---

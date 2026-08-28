@@ -5,7 +5,7 @@
 **Length:** about 5 minutes  
 **Data:** synthetic only — say this out loud.
 
-Use this as a talk track. Screens must match `design.md` section 13. If n8n (P1) is not built, use the in-app alert list at 4:00.
+Use this as a talk track. Screens must match `design.md` section 13. The Phase 7 n8n workflow is optional at runtime; use the in-app alert list if the notification receiver is not configured.
 
 ---
 
@@ -57,11 +57,11 @@ Stage 1 weights (if asked): 40% symptom anomaly, 25% pharmacy, 20% environment, 
 
 ## 4:00 — Alert workflow
 
-**Show:** alert list, and n8n notification **if** Phase 7 is done.
+**Show:** alert list and the n8n demo notification receiver log.
 
 **Say:**
 
-When the score crosses the threshold, the system raises an **alert for authorities** — place, score, top reasons. No personal health information. If n8n is running, this is the **workflow** path; otherwise the same alert is on the dashboard.
+When the score crosses 70, the engine writes an **alert for authorities** — place, score, and top reasons. n8n polls open alerts every five minutes, filters the same threshold, and posts a demo notification. No personal health information. The in-app alert remains the fallback if n8n is down.
 
 ---
 

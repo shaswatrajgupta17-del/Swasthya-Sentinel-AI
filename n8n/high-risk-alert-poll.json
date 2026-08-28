@@ -1,0 +1,78 @@
+{
+  "name": "Swasthya Sentinel - High Risk Alert Poll",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "schedule-high-risk-poll",
+      "name": "Poll every 5 minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "http://host.docker.internal:8000/alerts?status=open",
+        "options": {}
+      },
+      "id": "get-open-alerts",
+      "name": "Get open alerts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const alerts = $input.all().flatMap((item) => Array.isArray(item.json) ? item.json : [item.json]);\n\nreturn alerts\n  .filter((alert) => alert.severity === 'high' && Number(alert.score_0_100) >= 70)\n  .map((alert) => ({\n    json: {\n      subject: `Swasthya Sentinel high-risk alert: ${alert.location_name}`,\n      message: `High-risk geographic alert for ${alert.location_name} (${alert.location_id}), score ${Number(alert.score_0_100).toFixed(1)}/100. Top factors: ${alert.top_factors.map((factor) => `${factor.factor_name} (+${Number(factor.contribution).toFixed(1)} pts)`).join('; ')}. This is synthetic surveillance data and not a diagnosis.`,\n      location_id: alert.location_id,\n      location_name: alert.location_name,\n      score_0_100: alert.score_0_100,\n      cluster_id: alert.cluster_id,\n      top_factors: alert.top_factors,\n      data_mode: alert.data_mode,\n      not_a_diagnosis: alert.not_a_diagnosis\n    }\n  }));"
+      },
+      "id": "filter-high-risk",
+      "name": "Filter score >= 70",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.SENTINEL_NOTIFICATION_WEBHOOK_URL}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{$json}}",
+        "options": {}
+      },
+      "id": "send-demo-notification",
+      "name": "Send demo notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [960, 300]
+    }
+  ],
+  "connections": {
+    "Poll every 5 minutes": {
+      "main": [[{"node": "Get open alerts", "type": "main", "index": 0}]]
+    },
+    "Get open alerts": {
+      "main": [[{"node": "Filter score >= 70", "type": "main", "index": 0}]]
+    },
+    "Filter score >= 70": {
+      "main": [[{"node": "Send demo notification", "type": "main", "index": 0}]]
+    }
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "swasthya-sentinel-phase7-v1",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "tags": []
+}

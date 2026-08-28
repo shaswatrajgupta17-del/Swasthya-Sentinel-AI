@@ -6,14 +6,20 @@ import RiskBadge from '../components/RiskBadge'
 /** Map the FastAPI /alerts response shape to the fields the UI needs. */
 function normaliseAlert(raw) {
   const severityScore = raw.severity === 'high' ? 85 : raw.severity === 'medium' ? 55 : 25
+  const score = Number.isFinite(Number(raw.score_0_100)) ? Number(raw.score_0_100) : severityScore
+  const factorSummary = (raw.top_factors || [])
+    .map((factor) => `${factor.factor_name} (+${Number(factor.contribution).toFixed(1)} pts)`)
+    .join('; ')
   return {
     id: raw.id,
     location: raw.location_name ? `${raw.location_name} (${raw.location_id})` : raw.location_id,
     createdAt: raw.created_at ? new Date(raw.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—',
-    score: severityScore,
+    score,
     status: raw.status === 'open' ? 'Open' : raw.status === 'acknowledged' ? 'Acknowledged' : raw.status,
     syndrome: 'Fever / Diarrhea',
-    topFactor: `High severity alert · Multi-source signals elevated above historical baseline · not a diagnosis`,
+    topFactor: factorSummary
+      ? `Top factors: ${factorSummary}`
+      : 'High severity alert · multi-source signals elevated above historical baseline · not a diagnosis',
     dataMode: raw.data_mode,
   }
 }
