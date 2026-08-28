@@ -62,6 +62,8 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
         riskScore: score,
         riskCategory: riskCategory(score),
         clusterId: risk?.cluster_id ?? null,
+        modelVersion: risk?.model_version ?? 'phase5-v1',
+        factors: risk?.factors ?? [],
       }
     }).filter((location) => location.riskScore >= minScore)
   }, [locations, risks, minScore])

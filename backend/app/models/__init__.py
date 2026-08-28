@@ -81,3 +81,15 @@ class Alert(Base):
     severity: Mapped[str] = mapped_column(String)
     status: Mapped[str] = mapped_column(String, default="open")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class RiskFactor(Base):
+    __tablename__ = "risk_factors"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    location_id: Mapped[str] = mapped_column(String, index=True)
+    factor_name: Mapped[str] = mapped_column(String)
+    contribution: Mapped[float] = mapped_column(Float)
+    percentage: Mapped[float] = mapped_column(Float)
+    note: Mapped[str] = mapped_column(String)
+

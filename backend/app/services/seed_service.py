@@ -5,8 +5,7 @@ from pathlib import Path
 import pandas as pd
 from sqlalchemy.orm import Session
 
-from ..db import Base, DATABASE_PATH, engine
-from ..models import AshaSignal, EnvironmentSignal, Location, OpdSignal, PharmacySignal, RiskScore
+from ..models import AshaSignal, EnvironmentSignal, Location, OpdSignal, PharmacySignal, RiskFactor, RiskScore
 
 
 SYNTHETIC_DATA_DIR = Path(__file__).resolve().parents[3] / "data" / "synthetic"

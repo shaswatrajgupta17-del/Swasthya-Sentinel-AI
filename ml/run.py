@@ -1,5 +1,5 @@
 """
-ml/run.py — CLI entry point for the Swasthya Sentinel AI risk engine (Phase 5).
+ml/run.py — CLI entry point for the Swasthya Sentinel AI risk engine & explainability (Phases 5 & 6).
 
 Usage:
     python -m ml.run
@@ -11,9 +11,10 @@ Performs:
     4. Calculates DBSCAN spatial clusters of anomalous locations
     5. Calculates multi-source corroboration and environmental signals
     6. Calculates deterministic 0–100 risk scores
-    7. Persists risk_scores into SQLite
-    8. Generates High severity alerts for locations with score >= 70
-    9. Prints a concise summary and location evaluation table
+    7. Decomposes scores into 6 transparent risk factors (Phase 6)
+    8. Persists risk_scores and risk_factors into SQLite
+    9. Generates High severity alerts for locations with score >= 70
+    10. Prints execution summary and factor decomposition table
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ from ml.risk_engine import run_risk_pipeline
 
 def main() -> None:
     print("=" * 70)
-    print("SWASTHYA SENTINEL AI — RISK ENGINE RUNNER (PHASE 5)")
+    print("SWASTHYA SENTINEL AI — RISK ENGINE & EXPLAINABILITY (PHASE 5 & 6)")
     print("=" * 70)
     print("Surveillance: Synthetic multi-source health signals (aggregates only)")
     print("Disclaimer: Risk scores indicate statistical unusualness, not diagnosis.")
@@ -45,6 +46,7 @@ def main() -> None:
 
     scored_df = results["scored_dataframe"]
     alert_summary = results["alert_summary"]
+    factors_by_loc = results["factors_by_location"]
 
     print("\n[EVALUATION RESULTS BY LOCATION]")
     print("-" * 70)
@@ -68,10 +70,22 @@ def main() -> None:
     watch_count = int((scored_df["risk_category"] == "Watch").sum())
     low_count = int((scored_df["risk_category"] == "Low").sum())
     top_row = sorted_df.iloc[0]
+    top_loc_id = str(sorted_df.index[0])
+    top_factors = factors_by_loc.get(top_loc_id, [])
+
+    print(f"\n[PHASE 6 EXPLAINABILITY — TOP LOCATION: {top_row['name']} ({top_row['score_0_100']}/100)]")
+    print("-" * 70)
+    print(f"{'Factor Name':<30} {'Points':>8} {'Share':>8}   {'Note'}")
+    print("-" * 70)
+    for f in top_factors:
+        print(f"{f['factor_name']:<30} {f['contribution']:>7.1f}p {f['percentage']:>7.1f}%   {f['note']}")
+    print("-" * 70)
 
     print("\nRisk engine completed.")
     print(f"Model version: {results['model_version']}")
     print(f"Locations scored: {results['locations_evaluated']}")
+    print(f"Scores saved to DB: {results['scores_saved']}")
+    print(f"Factors saved to DB: {results['factors_saved']}")
     print(f"High: {high_count}")
     print(f"Watch: {watch_count}")
     print(f"Low: {low_count}")

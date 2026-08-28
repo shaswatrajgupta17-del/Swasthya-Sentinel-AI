@@ -24,3 +24,8 @@ export function getAlerts() {
 export function getSignalsSummary() {
   return getJson('/signals/summary')
 }
+
+export function getRiskDetails(locationId) {
+  return getJson(`/risks/${locationId}`)
+}
+
