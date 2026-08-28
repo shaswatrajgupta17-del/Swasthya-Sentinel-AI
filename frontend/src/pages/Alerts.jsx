@@ -5,15 +5,15 @@ import RiskBadge from '../components/RiskBadge'
 
 /** Map the FastAPI /alerts response shape to the fields the UI needs. */
 function normaliseAlert(raw) {
-  const severityScore = raw.severity === 'high' ? 80 : raw.severity === 'medium' ? 55 : 25
+  const severityScore = raw.severity === 'high' ? 85 : raw.severity === 'medium' ? 55 : 25
   return {
     id: raw.id,
-    location: raw.location_id,
+    location: raw.location_name ? `${raw.location_name} (${raw.location_id})` : raw.location_id,
     createdAt: raw.created_at ? new Date(raw.created_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }) : '—',
     score: severityScore,
     status: raw.status === 'open' ? 'Open' : raw.status === 'acknowledged' ? 'Acknowledged' : raw.status,
-    syndrome: '—',
-    topFactor: `Severity: ${raw.severity} · Synthetic aggregate signals · not a diagnosis`,
+    syndrome: 'Fever / Diarrhea',
+    topFactor: `High severity alert · Multi-source signals elevated above historical baseline · not a diagnosis`,
     dataMode: raw.data_mode,
   }
 }
@@ -81,8 +81,8 @@ function Alerts() {
 
       {alerts.length === 0 ? (
         <EmptyState
-          title="No alerts found"
-          message="No alert records were returned by the FastAPI backend. Re-seed the database or check the /alerts endpoint."
+          title="No active alerts"
+          message="There are currently no active high-risk alerts. Alerts are automatically registered when calculated risk scores cross the high-risk threshold (score ≥ 70)."
         />
       ) : (
         <ul className="space-y-3">

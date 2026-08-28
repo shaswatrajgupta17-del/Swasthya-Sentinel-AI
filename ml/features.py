@@ -1,4 +1,4 @@
-﻿"""
+"""
 ml/features.py — Feature extraction for the Swasthya Sentinel AI risk engine.
 
 Loads aggregate synthetic signals from SQLite and produces a feature DataFrame
@@ -180,10 +180,10 @@ def build_features(window_days: int = WINDOW_DAYS, baseline_days: int = BASELINE
         .groupby(["location_id", "date"])["units_sold"].sum()
         .reset_index()
     )
-    pharm_baseline_median = (
+    pharmacy_baseline_median = (
         pharm_base_daily.groupby("location_id")["units_sold"]
         .median()
-        .rename("pharm_baseline_median")
+        .rename("pharmacy_baseline_median")
     )
 
     # --- Assemble into one DataFrame ---
@@ -193,7 +193,7 @@ def build_features(window_days: int = WINDOW_DAYS, baseline_days: int = BASELINE
         opd_fever, opd_diarrhea,
         pharm_ors, pharm_fever,
         env_rain, env_risk,
-        asha_baseline_median, opd_baseline_median, pharm_baseline_median,
+        asha_baseline_median, opd_baseline_median, pharmacy_baseline_median,
     ]:
         feat = feat.join(series, how="left")
 

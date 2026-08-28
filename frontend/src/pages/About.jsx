@@ -9,10 +9,10 @@ function About() {
       <section className="rounded-lg border border-slate-200 bg-sentinel-card p-4 shadow-sm">
         <h2 className="text-base font-semibold text-sentinel-ink">Project purpose</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-700">
-          Swasthya Sentinel AI helps a district officer see unusual rural health patterns that appear
+          Swasthya Sentinel AI helps public health teams see unusual rural health patterns that appear
           across disconnected sources: ASHA worker reports, OPD symptom logs, pharmacy sales, and
           environmental indicators. The product combines those <strong>synthetic</strong> signals,
-          highlights geographic clusters, and shows a numeric risk score with reasons.
+          highlights geographic clusters, and shows a numeric risk score with transparent reasons.
         </p>
       </section>
 
@@ -20,20 +20,21 @@ function About() {
         <h2 className="text-base font-semibold text-sentinel-ink">Synthetic data disclaimer</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-700">
           This prototype uses synthetic data and does not provide medical diagnosis. It does not
-          confirm outbreaks, name a disease for a person, or recommend treatment. Village names and
-          counts are invented for the demo. There is no personal health information.
+          confirm outbreaks, name a disease for an individual person, or recommend clinical treatment.
+          Village names, coordinates, and signal counts are invented for demonstration purposes. There is
+          no personal health information (PHI).
         </p>
       </section>
 
       <section className="rounded-lg border border-slate-200 bg-sentinel-card p-4 shadow-sm">
         <h2 className="text-base font-semibold text-sentinel-ink">Technology overview</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-          <li>Frontend (this app): React, Vite, JavaScript, Tailwind CSS, Lucide icons</li>
-          <li>Maps and charts (later phases): React Leaflet, Recharts</li>
-          <li>Backend (later): FastAPI and SQLite</li>
-          <li>Risk scores (later): Python ML engine — not calculated in the browser</li>
-          <li>Alerts automation (optional): n8n</li>
-          <li>Cloud (optional): Azure for hosting or explaining already-calculated factors</li>
+          <li><strong>Frontend:</strong> React 18, Vite, JavaScript, Tailwind CSS, Lucide icons</li>
+          <li><strong>Maps & Visualization:</strong> React Leaflet with OpenStreetMap tiles, Recharts</li>
+          <li><strong>Backend API:</strong> Python FastAPI, SQLAlchemy ORM</li>
+          <li><strong>Database:</strong> SQLite local store for locations, aggregated signals, risks, and alerts</li>
+          <li><strong>Risk Scoring & ML:</strong> Python ML engine in <code>ml/</code> — calculating statistical anomaly scores and DBSCAN spatial clusters</li>
+          <li><strong>Workflow Automation (P1):</strong> n8n integration for threshold alert delivery</li>
         </ul>
       </section>
     </div>

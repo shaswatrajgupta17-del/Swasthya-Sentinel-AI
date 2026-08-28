@@ -26,8 +26,8 @@ function FitLocations({ locations }) {
   return null
 }
 
-function HealthMap({ locations, selectedLocation, onSelectLocation }) {
-  const initialCenter = [locations[0].lat, locations[0].lng]
+function HealthMap({ locations = [], selectedLocation, onSelectLocation }) {
+  const initialCenter = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [23.18, 79.95]
 
   return (
     <section className="overflow-hidden rounded-lg border border-slate-200 bg-sentinel-card shadow-sm" aria-label="Synthetic district risk map">

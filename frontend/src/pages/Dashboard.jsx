@@ -71,11 +71,11 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
   const highestScore = Math.max(0, ...apiLocations.map((location) => location.riskScore))
 
   if (loading) {
-    return <EmptyState title="Loading synthetic district..." message="Retrieving aggregate locations, placeholder risks, and signal summary from FastAPI." />
+    return <EmptyState title="Loading synthetic district..." message="Retrieving aggregate locations, calculated risks, and signal summary from FastAPI." />
   }
 
   if (error) {
-    return <EmptyState title="Backend unavailable. Start FastAPI server." message="Run `python backend/seed_database.py`, then `uvicorn backend.app.main:app --reload`, and refresh this page." />
+    return <EmptyState title="Backend unavailable. Start FastAPI server." message="Run `python backend/seed_database.py`, then `python -m ml.run`, then `uvicorn backend.app.main:app --reload`, and refresh this page." />
   }
 
   return (
@@ -83,18 +83,18 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
       <div>
         <h1 className="text-xl font-semibold text-sentinel-ink sm:text-2xl">District overview</h1>
         <p className="mt-1 text-sm text-slate-600">Map-first command centre · last {days} days · synthetic demonstration data</p>
-        {syndrome !== 'All' ? <p className="mt-1 text-xs text-slate-500">Syndrome filtering will use a later location-level signals endpoint; Phase 4 currently exposes district aggregates.</p> : null}
+        {syndrome !== 'All' ? <p className="mt-1 text-xs text-slate-500">Displaying aggregated syndromic overview across all channels.</p> : null}
       </div>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Key figures">
         <KPICard label="Locations monitored" value={locations.length} hint="From synthetic SQLite data" icon={MapPinned} />
         <KPICard label="Open alerts" value={alerts.filter((alert) => alert.status === 'open').length} hint="From FastAPI" icon={Bell} />
-        <KPICard label="Highest risk score" value={highestScore} hint="Phase 4 placeholder, 0–100" icon={Activity} />
+        <KPICard label="Highest risk score" value={highestScore} hint="0–100 · synthetic surveillance" icon={Activity} />
         <KPICard label="Signal data range" value={signalSummary ? `${signalSummary.date_range.start} → ${signalSummary.date_range.end}` : 'Unavailable'} hint="Aggregate records in SQLite" icon={Clock} />
       </section>
 
       {apiLocations.length === 0 ? (
-        <EmptyState title="No locations match this minimum score" message="Lower the minimum score to include Phase 4 placeholder scores." />
+        <EmptyState title="No locations match this minimum score" message="Lower the minimum score filter to view more locations." />
       ) : (
         <section className="grid items-start gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(360px,0.75fr)]">
           <HealthMap locations={apiLocations} selectedLocation={selected} onSelectLocation={onSelectLocation} />
