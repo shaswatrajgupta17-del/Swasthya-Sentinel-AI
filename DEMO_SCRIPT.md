@@ -5,6 +5,17 @@
 **Length:** about 5 minutes  
 **Data:** synthetic only — say this out loud.
 
+## Demo preflight
+
+Use the frozen local scenario before presenting:
+
+1. `python backend/seed_database.py`
+2. `python -m ml.run`
+3. `python -m uvicorn backend.app.main:app --reload`
+4. `npm run dev --prefix frontend`
+
+Frozen inputs: generator seed `20260828`, 60 synthetic days, model version `phase5-v1`, and High alert threshold `70`.
+
 Use this as a talk track. Screens must match `design.md` section 13. The Phase 7 n8n workflow is optional at runtime; use the in-app alert list if the notification receiver is not configured.
 
 ---
@@ -51,7 +62,7 @@ This is the officer’s **command centre**. Colour is **unusual clustered activi
 
 The score is **calculated**, then explained. In this scenario you can see **ASHA counts up**, **OPD counts up**, and a **pharmacy spike** (for example ORS) moving **together**. Risk increased because **multiple signals changed together** — not because an AI named a disease.
 
-Stage 1 weights (if asked): 40% symptom anomaly, 25% pharmacy, 20% environment, 15% historical pattern.
+If asked about the transparent score, explain the current engine weights: 40% anomaly, 30% multi-source corroboration, 20% spatial clustering, and 10% environmental context. The model version is `phase5-v1`.
 
 ---
 

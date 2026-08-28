@@ -88,7 +88,7 @@ Full design: `architecture.md`. UI: `design.md`.
 
 ## Development roadmap
 
-See `phases.md`. **P0** must ship for SIH. **P1** = n8n and Azure. Do not start Phase 1 until the team approves.
+See `phases.md`. **P0** must ship for SIH. **P1** = n8n and Azure. Phases 1–10 are complete for this local prototype.
 
 ---
 
