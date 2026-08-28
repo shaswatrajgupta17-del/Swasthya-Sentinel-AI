@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Bell, Filter, CheckCircle2, Search, ArrowRight, ShieldAlert, Clock, Layers } from 'lucide-react'
+import { Search, ArrowRight } from 'lucide-react'
 import { getAlerts, updateAlertStatus } from '../api/api'
 import EmptyState from '../components/EmptyState'
 import RiskBadge from '../components/RiskBadge'

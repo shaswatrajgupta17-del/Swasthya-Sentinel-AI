@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Activity, Bell, BrainCircuit, BookOpen, Layers, Map, MapPin, Shield, Workflow, Play, Sparkles } from 'lucide-react'
+import { Activity, Bell, BrainCircuit, BookOpen, Map, MapPin, Shield, Workflow, Sparkles } from 'lucide-react'
 
 function Header({ currentPage, onNavigate, districtName = 'Kalyanpur Demo District', onStartDemo }) {
   const [currentTime, setCurrentTime] = useState(() => new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' }))

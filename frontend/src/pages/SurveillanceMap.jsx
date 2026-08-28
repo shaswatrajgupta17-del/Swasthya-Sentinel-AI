@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Map, Layers, Search, MapPin, ExternalLink, Activity, Info, ShieldAlert } from 'lucide-react'
-import { getLocations, getRisks, getSimulationStatus } from '../api/api'
+import { Layers, Search } from 'lucide-react'
+import { getLocations, getRisks } from '../api/api'
 import HealthMap from '../components/HealthMap'
 import RiskBadge from '../components/RiskBadge'
 import EmptyState from '../components/EmptyState'
@@ -21,22 +21,31 @@ function SurveillanceMap({ onSelectLocation, onNavigateToLocation }) {
   const [error, setError] = useState('')
 
   useEffect(() => {
+    let cancelled = false
     async function load() {
       setLoading(true)
       setError('')
       try {
         const [locData, riskData] = await Promise.all([getLocations(), getRisks()])
-        setLocations(locData)
-        setRisks(riskData)
-        if (locData.length > 0) setSelectedId(locData[0].location_id)
+        if (!cancelled) {
+          setLocations(locData)
+          setRisks(riskData)
+          if (locData.length > 0) setSelectedId(locData[0].location_id)
+        }
       } catch (err) {
-        setError('Unable to load map surveillance data from FastAPI')
+        if (!cancelled) setError(err.message || 'Unable to load map surveillance data')
       } finally {
-        setLoading(false)
+        if (!cancelled) setLoading(false)
       }
     }
     load()
+    return () => { cancelled = true }
   }, [])
+
+  function handleSelect(id) {
+    setSelectedId(id)
+    if (onSelectLocation) onSelectLocation(id)
+  }
 
   const apiLocations = useMemo(() => {
     const riskByLocationId = new Map(risks.map((r) => [r.location_id, r]))
@@ -145,7 +154,7 @@ function SurveillanceMap({ onSelectLocation, onNavigateToLocation }) {
           <HealthMap
             locations={filteredLocations}
             selectedLocation={selectedLoc}
-            onSelectLocation={setSelectedId}
+            onSelectLocation={handleSelect}
             onOpenInvestigation={onNavigateToLocation}
             height="540px"
             showClusterConnectors={true}
@@ -220,7 +229,7 @@ function SurveillanceMap({ onSelectLocation, onNavigateToLocation }) {
               return (
                 <div
                   key={loc.id}
-                  onClick={() => setSelectedId(loc.id)}
+                  onClick={() => handleSelect(loc.id)}
                   className={`rounded-lg border p-3 cursor-pointer transition-all ${
                     active
                       ? 'border-sentinel-teal bg-sentinel-teal/5 ring-1 ring-sentinel-teal shadow-xs'
@@ -239,20 +248,6 @@ function SurveillanceMap({ onSelectLocation, onNavigateToLocation }) {
                     <p className="mt-2 text-[10px] font-bold text-rose-600">
                       ● Part of Cluster {loc.clusterId}
                     </p>
-                  )}
-
-                  {active && onNavigateToLocation && (
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onNavigateToLocation(loc.id)
-                      }}
-                      className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded bg-sentinel-teal py-1.5 text-xs font-bold text-white hover:bg-sentinel-teal-dark"
-                    >
-                      <span>Open Investigation</span>
-                      <ExternalLink className="h-3 w-3" />
-                    </button>
                   )}
                 </div>
               )

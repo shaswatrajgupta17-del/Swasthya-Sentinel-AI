@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, Bell, Clock, MapPinned, RefreshCw, ShieldAlert, Sparkles, Layers, Sliders } from 'lucide-react'
+import { Activity, Bell, Clock, MapPinned, RefreshCw, Layers } from 'lucide-react'
 import {
   getAlerts,
   getLocations,

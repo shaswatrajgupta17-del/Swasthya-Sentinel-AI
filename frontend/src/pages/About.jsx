@@ -1,6 +1,6 @@
-import { Shield, Sparkles, BookOpen, Layers, CheckCircle2, ArrowRight, Terminal, Cpu } from 'lucide-react'
+import { Shield, Sparkles, Cpu } from 'lucide-react'
 
-function About({ onNavigate }) {
+function About() {
   const techStack = [
     { layer: 'Frontend Web App', tech: 'React 19 + Vite + Tailwind CSS (Gov Palettes)' },
     { layer: 'Spatial Mapping', tech: 'React Leaflet + OpenStreetMap + DBSCAN Polylines' },

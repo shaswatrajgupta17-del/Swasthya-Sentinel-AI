@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ClipboardCheck, AlertTriangle, Layers, TrendingUp, Sparkles, CheckCircle2, MapPin, Clock } from 'lucide-react'
+import { ArrowLeft, ClipboardCheck, Layers, Clock } from 'lucide-react'
 import { getLocation, getRiskDetails, getSignalTrends, getAlerts, updateAlertStatus, getLocations } from '../api/api'
 import EmptyState from '../components/EmptyState'
 import RiskBadge from '../components/RiskBadge'

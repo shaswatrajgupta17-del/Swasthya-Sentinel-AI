@@ -1,4 +1,4 @@
-import { ArrowUpRight, ArrowDownRight, TrendingUp, AlertCircle, Sparkles, Activity } from 'lucide-react'
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Sparkles, Activity } from 'lucide-react'
 
 function WhatChanged({ trends, locationName = 'Rampur', simulation, riskScore }) {
   if (!trends || !trends.comparisons) {

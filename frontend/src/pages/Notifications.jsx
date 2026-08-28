@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle2, XCircle, Workflow, Bell, Send, ArrowRight, Code, ShieldCheck, Terminal, Layers } from 'lucide-react'
+import { CheckCircle2, XCircle, Workflow, Code } from 'lucide-react'
 import { getNotificationStatus } from '../api/api'
 import EmptyState from '../components/EmptyState'
 
@@ -8,21 +8,22 @@ function Notifications() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  async function loadStatus() {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await getNotificationStatus()
-      setStatus(data)
-    } catch (err) {
-      setError('Unable to load notification status from FastAPI')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    let cancelled = false
+    async function loadStatus() {
+      setLoading(true)
+      setError('')
+      try {
+        const data = await getNotificationStatus()
+        if (!cancelled) setStatus(data)
+      } catch (err) {
+        if (!cancelled) setError(err.message || 'Unable to load notification status from FastAPI')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
     loadStatus()
+    return () => { cancelled = true }
   }, [])
 
   if (loading) {
@@ -149,7 +150,7 @@ function Notifications() {
             </div>
             <p className="text-xs font-bold text-sentinel-ink">ML Risk Engine</p>
             <p className="mt-1 text-[11px] text-slate-500">
-              Computes deterministic 0–100 risk score and persists high-risk alerts ($\ge 70$)
+              Computes deterministic 0–100 risk score and persists high-risk alerts (≥70)
             </p>
           </div>
 

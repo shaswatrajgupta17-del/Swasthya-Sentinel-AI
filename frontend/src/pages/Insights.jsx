@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { BrainCircuit, Activity, Layers, Sparkles, Sliders, ShieldCheck, CheckCircle2, TrendingUp, Info } from 'lucide-react'
+import { BrainCircuit, Activity, Layers, Sparkles, Sliders, CheckCircle2 } from 'lucide-react'
 import { getInsights, getRisks } from '../api/api'
 import EmptyState from '../components/EmptyState'
 import KPICard from '../components/KPICard'

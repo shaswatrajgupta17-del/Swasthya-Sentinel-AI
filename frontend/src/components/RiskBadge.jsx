@@ -1,26 +1,24 @@
-/**
- * Risk band + numeric score. Colour is never the only cue (label is always shown).
- * Bands from design.md: Low 0–39, Watch 40–69, High 70–100.
- */
 const STYLES = {
-  Low: 'bg-risk-low text-white',
-  Watch: 'bg-risk-watch text-sentinel-ink',
-  High: 'bg-risk-high text-white',
+  Low: 'bg-[#2A9D8F] text-white',
+  Watch: 'bg-[#E9C46A] text-[#0F2A3A] font-semibold',
+  High: 'bg-[#E76F51] text-white',
 }
 
 function RiskBadge({ score, category, size = 'md', modelVersion = 'phase5-v1' }) {
-  const label = category || 'Low'
-  const padding = size === 'lg' ? 'px-3 py-2 gap-2' : 'px-2 py-1 gap-1.5'
-  const scoreClass = size === 'lg' ? 'text-xl' : 'text-sm'
+  const label = category || (score >= 70 ? 'High' : score >= 40 ? 'Watch' : 'Low')
+  const padding = size === 'lg' ? 'px-3.5 py-2 gap-2.5' : 'px-2.5 py-1 gap-1.5'
+  const scoreClass = size === 'lg' ? 'text-lg font-bold' : 'text-xs font-bold'
+
+  const formattedScore = typeof score === 'number' ? score.toFixed(1) : score
 
   return (
     <span
-      className={`inline-flex items-center rounded-md font-medium tabular-nums ${padding} ${STYLES[label] || STYLES.Low}`}
-      aria-label={`Risk ${score} out of 100, ${label.toLowerCase()}`}
-      title={`Model version: ${modelVersion}`}
+      className={`inline-flex items-center rounded-md tabular-nums shadow-xs ${padding} ${STYLES[label] || STYLES.Low}`}
+      aria-label={`Risk score ${formattedScore} out of 100, severity band ${label.toLowerCase()}`}
+      title={`Model version: ${modelVersion} · Synthetic Score`}
     >
-      <span className={`${scoreClass} leading-none`}>Risk {score}</span>
-      <span className="text-xs uppercase tracking-wide opacity-90">{label}</span>
+      <span className={`${scoreClass} leading-none`}>{formattedScore}</span>
+      <span className="text-[10px] uppercase font-bold tracking-wider opacity-95">{label}</span>
     </span>
   )
 }

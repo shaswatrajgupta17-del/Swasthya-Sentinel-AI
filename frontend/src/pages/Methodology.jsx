@@ -102,7 +102,7 @@ function Methodology() {
             <div className="rounded border border-slate-100 bg-slate-50 p-2.5">
               <strong className="text-sentinel-ink">Statistical Anomaly ($S_{anomaly}$, 40%):</strong>
               <p className="mt-1 text-[11px] text-slate-600">
-                Sum of syndromic counts (fever + diarrhea) normalized by median baseline: $Z_k = \frac{\text{sum}_{7d}(k)}{\text{median}_{30d}(k) + 1}$.
+                Sum of syndromic counts (fever + diarrhea) normalized by median baseline: Z_k = sum_7d(k) / (median_30d(k) + 1).
               </p>
             </div>
 

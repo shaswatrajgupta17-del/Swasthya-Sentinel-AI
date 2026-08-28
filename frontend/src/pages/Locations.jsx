@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Search, MapPin, ArrowUpDown, Filter, ChevronRight, Layers } from 'lucide-react'
+import { Search, ChevronRight } from 'lucide-react'
 import { getLocations, getRisks } from '../api/api'
 import EmptyState from '../components/EmptyState'
 import RiskBadge from '../components/RiskBadge'

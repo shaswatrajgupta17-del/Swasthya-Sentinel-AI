@@ -1,4 +1,4 @@
-import { CheckCircle2, AlertTriangle, XCircle, Activity, Database, BrainCircuit, Play, Workflow } from 'lucide-react'
+import { Activity, Database, BrainCircuit, Play, Workflow } from 'lucide-react'
 
 function SystemHealth({ simulation, notificationStatus, risksCount = 12 }) {
   const isApiOk = true
