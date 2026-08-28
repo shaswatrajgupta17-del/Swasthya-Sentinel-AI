@@ -56,7 +56,7 @@ MVP vs later: `PRD.md`. Demo walkthrough: `DEMO_SCRIPT.md`.
 
 **Automation:** n8n (P1, exported workflow under `n8n/`)
 
-**Cloud:** Azure (optional — hosting and/or explanation summary)
+**Cloud:** Azure deferred; the supported demo path is local Vite + FastAPI + SQLite
 
 ---
 
@@ -116,7 +116,7 @@ Not available yet. After Phase 1+:
 3. **Data:** seed from `data/synthetic/`  
 4. **ML:** run the risk engine, then refresh the dashboard  
 5. **n8n:** import `n8n/high-risk-alert-poll.json`, configure `SENTINEL_NOTIFICATION_WEBHOOK_URL`, and activate the workflow. It polls `/alerts?status=open`, filters scores at least 70, and posts location, score, and top factors. The app works when n8n is stopped.
-6. **Azure:** optional (P1); local demo should work without it
+6. **Azure:** deferred for this synthetic prototype; no Azure credentials or runtime are required
 
 Exact commands will be added when those phases land.
 
