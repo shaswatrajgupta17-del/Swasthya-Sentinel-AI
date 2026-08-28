@@ -1,204 +1,81 @@
-import { useEffect, useState } from 'react'
-import { BrainCircuit, Activity, Layers, Sparkles, Sliders, CheckCircle2 } from 'lucide-react'
-import { getInsights, getRisks } from '../api/api'
-import EmptyState from '../components/EmptyState'
-import KPICard from '../components/KPICard'
+import { BrainCircuit, CheckCircle2, ShieldAlert, Cpu } from 'lucide-react'
 
 function Insights() {
-  const [data, setData] = useState(null)
-  const [risks, setRisks] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-
-  useEffect(() => {
-    async function load() {
-      setLoading(true)
-      setError('')
-      try {
-        const [insightsRes, risksRes] = await Promise.all([getInsights(), getRisks()])
-        setData(insightsRes)
-        setRisks(risksRes)
-      } catch {
-        setError('Unable to retrieve model telemetry from FastAPI')
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
-
-  if (loading) {
-    return (
-      <div className="space-y-6" id="main-content" tabIndex={-1}>
-        <div className="h-96 rounded-lg border border-slate-200 bg-white p-6 animate-pulse">
-          <div className="h-6 w-64 bg-slate-200 rounded"></div>
-          <div className="mt-4 h-80 bg-slate-100 rounded"></div>
-        </div>
-      </div>
-    )
-  }
-
-  if (error || !data) {
-    return <EmptyState title="Model Telemetry Error" message={error} />
-  }
-
-  const weights = [
-    { name: 'Statistical Anomaly Ratio', weight: '40%', desc: 'Current 7-day volume vs 30-day historical baseline median across syndromic streams', color: 'bg-[#3D5A80]' },
-    { name: 'Multi-Source Corroboration', weight: '30%', desc: 'Simultaneous elevation across 2+ independent channels (ASHA + OPD + Pharmacy)', color: 'bg-[#0E7C7B]' },
-    { name: 'DBSCAN Spatial Clustering', weight: '20%', desc: 'Geographic proximity grouping (radius eps=2.5km, min_samples=2)', color: 'bg-[#2A9D8F]' },
-    { name: 'Environmental Indicators', weight: '10%', desc: 'Water risk index and heavy rainfall anomalies in local drainage basin', color: 'bg-[#4A7C59]' },
-  ]
-
-  const highRiskCount = risks.filter((r) => r.score_0_100 >= 70).length
-  const watchCount = risks.filter((r) => r.score_0_100 >= 40 && r.score_0_100 < 70).length
-  const lowCount = risks.filter((r) => r.score_0_100 < 40).length
-
   return (
-    <div className="space-y-6" id="main-content" tabIndex={-1}>
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white p-4 rounded-lg shadow-xs">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-sentinel-ink sm:text-2xl">
-              AI Insights & Model Telemetry
-            </h1>
-            <span className="rounded bg-sentinel-teal/15 px-2 py-0.5 text-xs font-bold text-sentinel-teal">
-              Transparent ML Room
-            </span>
+    <div className="space-y-6 max-w-4xl">
+      <div className="card p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg" style={{ background: 'var(--teal-light)' }}>
+            <BrainCircuit className="h-5 w-5" style={{ color: 'var(--teal)' }} />
           </div>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Real-time inference parameters, mathematical weights, and anomaly distribution
-          </p>
+          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-main)' }}>How It Works</h1>
         </div>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+          Understanding Swasthya Sentinel AI's health early warning system.
+        </p>
       </div>
 
-      {/* KPI Overview */}
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <KPICard
-          label="Model Architecture"
-          value="phase5-v1"
-          hint="Transparent Weighted ML Engine"
-          icon={BrainCircuit}
-          color="teal"
-        />
-        <KPICard
-          label="Locations Evaluated"
-          value={data.locations_analyzed}
-          hint="12 Village Spatial Nodes"
-          icon={Activity}
-          color="slate"
-        />
-        <KPICard
-          label="Detected Anomalies"
-          value={data.anomalies_detected}
-          hint="Watch & High Risk Bands"
-          icon={Sparkles}
-          color={data.anomalies_detected > 0 ? 'rose' : 'teal'}
-        />
-        <KPICard
-          label="Spatial Clusters"
-          value={data.clusters_detected}
-          hint="DBSCAN (eps=2.5km, min=2)"
-          icon={Layers}
-          color="indigo"
-        />
-      </section>
-
-      {/* Model Health & Pipeline Metadata */}
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-5 w-5 text-emerald-600" />
-            <h2 className="text-sm font-bold text-sentinel-ink">
-              Scoring Pipeline Specifications
-            </h2>
-          </div>
-          <span className="rounded bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800 uppercase">
-            {data.model_status}
-          </span>
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
-          <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase">Model Identifier</p>
-            <p className="mt-1 text-sm font-bold text-sentinel-ink">{data.model_name}</p>
-            <p className="text-[10px] text-slate-400">Deterministic statistical scoring</p>
-          </div>
-
-          <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase">Last Inference Cycle</p>
-            <p className="mt-1 text-sm font-bold text-sentinel-ink">
-              {data.last_inference ? new Date(data.last_inference).toLocaleString('en-IN') : 'Live In-Memory Baseline'}
-            </p>
-            <p className="text-[10px] text-slate-400">Simulation Clock Synchronized</p>
-          </div>
-
-          <div className="rounded-md border border-slate-100 bg-slate-50 p-3">
-            <p className="text-[11px] font-semibold text-slate-500 uppercase">Peak Anomaly Index</p>
-            <p className="mt-1 text-sm font-bold text-rose-600">{data.highest_anomaly} / 100</p>
-            <p className="text-[10px] text-slate-400">Planted Cluster (East Block)</p>
-          </div>
-        </div>
-
-        <div className="mt-4 rounded-md bg-sentinel-mist p-3 text-xs text-slate-700 leading-relaxed border border-slate-200">
-          <strong>Scoring Methodology Note: </strong>
-          {data.logic_note}
-        </div>
-      </section>
-
-      {/* Scoring Weight Breakdown */}
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
-        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-          <Sliders className="h-4 w-4 text-sentinel-teal" />
-          <h2 className="text-sm font-bold text-sentinel-ink">
-            Mathematical Component Weighting Matrix (Total = 100%)
+      <div className="grid gap-6 md:grid-cols-2">
+        <section className="card p-6 border-t-4 border-teal-600">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+            <Cpu className="h-5 w-5" style={{ color: 'var(--teal)' }} />
+            The Scoring System
           </h2>
-        </div>
+          <p className="text-sm mb-4" style={{ color: 'var(--text-main)' }}>
+            The system calculates a risk score (0-100) for every village based on four data sources:
+          </p>
+          <ul className="space-y-3 text-sm">
+            <FeatureRow name="ASHA Reports" weight="40%" desc="Community health worker door-to-door surveys." />
+            <FeatureRow name="OPD Visits" weight="30%" desc="Patient visits at local government clinics." />
+            <FeatureRow name="Pharmacy Data" weight="20%" desc="Unusual increases in specific medicine purchases." />
+            <FeatureRow name="Environment" weight="10%" desc="Rainfall and water quality data." />
+          </ul>
+        </section>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {weights.map((w) => (
-            <div key={w.name} className="rounded-md border border-slate-200 bg-slate-50 p-3.5 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-sentinel-ink">{w.name}</span>
-                  <span className="text-xs font-mono font-bold text-sentinel-teal">{w.weight}</span>
-                </div>
-                <p className="mt-2 text-[11px] text-slate-600 leading-relaxed">{w.desc}</p>
-              </div>
-              <div className="mt-3 h-1.5 w-full bg-slate-200 rounded-full overflow-hidden">
-                <div className={`h-full ${w.color}`} style={{ width: w.weight }}></div>
-              </div>
+        <section className="card p-6 border-t-4 border-amber-500">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+            <CheckCircle2 className="h-5 w-5" style={{ color: 'var(--amber)' }} />
+            Why We Need Multiple Sources
+          </h2>
+          <div className="space-y-4 text-sm" style={{ color: 'var(--text-muted)' }}>
+            <p>
+              A sudden spike in pharmacy purchases doesn't always mean an outbreak. It could just be stock-up behavior.
+            </p>
+            <p>
+              However, if pharmacy purchases <span className="font-bold text-slate-700">AND</span> ASHA reports <span className="font-bold text-slate-700">AND</span> clinic visits all increase simultaneously, the system flags it as highly reliable.
+            </p>
+            <div className="p-4 rounded-lg border" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}>
+              <p className="font-bold mb-1" style={{ color: 'var(--text-main)' }}>Nearby Villages</p>
+              <p>The system also checks if nearby villages are showing the same pattern. If they are, it creates a "cluster alert" which increases priority.</p>
             </div>
-          ))}
-        </div>
-      </section>
+          </div>
+        </section>
+      </div>
 
-      {/* Anomaly Distribution across Villages */}
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs">
-        <h2 className="text-sm font-bold text-sentinel-ink mb-3">
-          Village Risk Distribution Summary
+      <div className="card p-6 border-l-4 border-red-500 bg-red-50/50">
+        <h2 className="text-lg font-bold mb-2 flex items-center gap-2 text-red-800">
+          <ShieldAlert className="h-5 w-5 text-red-600" />
+          Strictly a Surveillance Tool
         </h2>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-3 text-center">
-            <p className="text-xs font-bold text-emerald-800 uppercase">Low Risk (0–39)</p>
-            <p className="mt-1 text-2xl font-bold text-emerald-700">{lowCount}</p>
-            <p className="text-[11px] text-emerald-600">Expected baseline volume</p>
-          </div>
-
-          <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-3 text-center">
-            <p className="text-xs font-bold text-amber-800 uppercase">Watch Level (40–69)</p>
-            <p className="mt-1 text-2xl font-bold text-amber-700">{watchCount}</p>
-            <p className="text-[11px] text-amber-600">Moderate single-stream surge</p>
-          </div>
-
-          <div className="rounded-lg border border-rose-200 bg-rose-50/50 p-3 text-center">
-            <p className="text-xs font-bold text-rose-800 uppercase">High Risk (70–100)</p>
-            <p className="mt-1 text-2xl font-bold text-rose-700">{highRiskCount}</p>
-            <p className="text-[11px] text-rose-600">Multi-source spatial cluster</p>
-          </div>
-        </div>
-      </section>
+        <p className="text-sm text-red-700">
+          This system is designed exclusively for public health officers to identify areas needing field investigation. 
+          It does <strong>not</strong> diagnose any disease. It does <strong>not</strong> collect personal patient data (PHI). 
+          All data is anonymized and aggregated at the village level.
+        </p>
+      </div>
     </div>
+  )
+}
+
+function FeatureRow({ name, weight, desc }) {
+  return (
+    <li className="flex gap-3 pb-3 border-b last:border-0 last:pb-0" style={{ borderColor: 'var(--border)' }}>
+      <div className="w-12 shrink-0 font-bold tabular-nums" style={{ color: 'var(--teal)' }}>{weight}</div>
+      <div>
+        <div className="font-bold" style={{ color: 'var(--text-main)' }}>{name}</div>
+        <div className="text-xs" style={{ color: 'var(--text-muted)' }}>{desc}</div>
+      </div>
+    </li>
   )
 }
 

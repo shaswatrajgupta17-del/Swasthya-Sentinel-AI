@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
-import DisclaimerBanner from './components/DisclaimerBanner'
 import Dashboard from './pages/Dashboard'
 import SurveillanceMap from './pages/SurveillanceMap'
 import Locations from './pages/Locations'
@@ -11,57 +10,70 @@ import Insights from './pages/Insights'
 import Notifications from './pages/Notifications'
 import Methodology from './pages/Methodology'
 import About from './pages/About'
-import { X, ChevronRight } from 'lucide-react'
+import { X, ChevronRight, Sparkles } from 'lucide-react'
 import { startSimulation } from './api/api'
 
-const DISTRICT_NAME = 'Kalyanpur Demo District'
+const DISTRICT_NAME = 'Kalyanpur District'
 
+// 18-step SIH demo sequence
 const DEMO_STAGES = [
   {
-    step: 1,
-    title: '1. Command Centre Overview',
+    step: 1, total: 9,
+    title: 'Normal district — all villages at baseline',
     page: 'dashboard',
-    desc: 'Review 12 village surveillance nodes, baseline KPIs, and live system health.',
+    desc: 'Show the district in normal state. 12 villages monitored. Health signals are within expected range.',
   },
   {
-    step: 2,
-    title: '2. Surveillance Map & Cluster',
+    step: 2, total: 9,
+    title: 'Filter by Fever signal',
+    page: 'dashboard',
+    desc: 'Select "Fever" in the sidebar. The map and KPIs now focus only on fever-related health signals.',
+    syndrome: 'Fever',
+  },
+  {
+    step: 3, total: 9,
+    title: 'Start simulation — Fever increase scenario',
+    page: 'dashboard',
+    desc: 'Injecting a fever surge into Rampur, Lakshmipur, and Devgaon. Watch numbers change live.',
+    action: async () => { await startSimulation('FEVER CLUSTER', 5.0) },
+  },
+  {
+    step: 4, total: 9,
+    title: 'Watch the district map change',
     page: 'map',
-    desc: 'Observe DBSCAN spatial cluster C1 connecting Rampur, Lakshmipur, and Devgaon.',
+    desc: 'Map markers for East Block villages turn amber → red as risk scores rise. Cluster highlighted.',
   },
   {
-    step: 3,
-    title: '3. Live Synthetic Surge (5×)',
-    page: 'dashboard',
-    desc: 'Injecting Fever Cluster surge into live stream. Watch multi-source signals rise.',
-    action: async () => {
-      await startSimulation('FEVER CLUSTER', 5.0)
-    },
+    step: 5, total: 9,
+    title: 'New alert appears',
+    page: 'alerts',
+    desc: 'System automatically created a High severity alert for Rampur when the risk exceeded 70.',
   },
   {
-    step: 4,
-    title: '4. Village Node Investigation',
+    step: 6, total: 9,
+    title: 'Open village: Rampur',
     page: 'location-details',
     locationId: 'loc_001',
-    desc: 'Inspect Rampur: observe factor contributions (+31.2 pts ASHA, +22.4 pts OPD) totaling 98.6 pts.',
+    desc: 'Investigate Rampur. See ASHA reports, OPD visits, and pharmacy data — all above normal.',
   },
   {
-    step: 5,
-    title: '5. Threshold Alerts & Lifecycle',
+    step: 7, total: 9,
+    title: '"Why was this flagged?"',
+    page: 'location-details',
+    locationId: 'loc_001',
+    desc: 'Plain-language explanation: ASHA reports +54.8% above normal. OPD visits confirm. Nearby villages also flagged.',
+  },
+  {
+    step: 8, total: 9,
+    title: 'Acknowledge the alert',
     page: 'alerts',
-    desc: 'High severity alert generated (score ≥ 70). Inspect lifecycle timeline and investigate.',
+    desc: 'Officer marks the alert as "Under investigation". System records the action with a timestamp.',
   },
   {
-    step: 6,
-    title: '6. n8n Decoupled Webhook Automation',
+    step: 9, total: 9,
+    title: 'Notification & system status',
     page: 'notifications',
-    desc: 'Review honest webhook automation contract and external alert dispatch schema.',
-  },
-  {
-    step: 7,
-    title: '7. Methodology & Ethical Disclaimer',
-    page: 'methodology',
-    desc: 'Conclude with statistical DBSCAN equations, reproducible seed (20260828), and non-diagnostic privacy safeguards.',
+    desc: 'Show n8n notification pipeline and system status. Test notification button available.',
   },
 ]
 
@@ -70,9 +82,7 @@ function App() {
     const path = window.location.pathname
     if (path.startsWith('/locations/')) return 'location-details'
     const clean = path.slice(1)
-    if (clean === 'map' || clean === 'locations' || clean === 'alerts' || clean === 'insights' || clean === 'notifications' || clean === 'methodology' || clean === 'about') {
-      return clean
-    }
+    if (['map', 'locations', 'alerts', 'insights', 'notifications', 'methodology', 'about'].includes(clean)) return clean
     return 'dashboard'
   })
 
@@ -84,38 +94,45 @@ function App() {
     return path.startsWith('/locations/') ? path.split('/')[2] : 'loc_001'
   })
 
-  // SIH Demo Tour Mode State
-  const [demoTourActive, setDemoTourActive] = useState(false)
-  const [currentDemoStage, setCurrentDemoStage] = useState(0)
+  // Dark mode
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return localStorage.getItem('swasthya-dark') === 'true' ||
+      (!localStorage.getItem('swasthya-dark') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  })
 
   useEffect(() => {
-    const handlePopState = () => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light')
+    localStorage.setItem('swasthya-dark', darkMode ? 'true' : 'false')
+  }, [darkMode])
+
+  // Demo tour
+  const [demoActive, setDemoActive] = useState(false)
+  const [demoStep, setDemoStep] = useState(0)
+  const demoSyndromeRef = useRef('All')
+
+  useEffect(() => {
+    const handlePop = () => {
       const path = window.location.pathname
       if (path.startsWith('/locations/')) {
         setCurrentPage('location-details')
         setSelectedId(path.split('/')[2] || 'loc_001')
       } else {
-        const clean = path.slice(1) || 'dashboard'
-        setCurrentPage(clean)
+        setCurrentPage(path.slice(1) || 'dashboard')
       }
     }
-    window.addEventListener('popstate', handlePopState)
-    return () => window.removeEventListener('popstate', handlePopState)
+    window.addEventListener('popstate', handlePop)
+    return () => window.removeEventListener('popstate', handlePop)
   }, [])
 
-  // Keyboard accessibility: Escape key exits demo mode
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && demoTourActive) {
-        setDemoTourActive(false)
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [demoTourActive])
+    const onKey = (e) => { if (e.key === 'Escape' && demoActive) setDemoActive(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [demoActive])
 
   function navigate(page) {
-    const path = page === 'dashboard' ? '/dashboard' : `/${page}`
+    const path = page === 'dashboard' ? '/' : `/${page}`
     window.history.pushState({}, '', path)
     setCurrentPage(page)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -128,78 +145,80 @@ function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
-  async function startDemoTour() {
-    setDemoTourActive(true)
-    setCurrentDemoStage(0)
+  function startDemo() {
+    setDemoActive(true)
+    setDemoStep(0)
     navigate(DEMO_STAGES[0].page)
   }
 
-  async function advanceDemoTour() {
-    const nextIndex = currentDemoStage + 1
-    if (nextIndex < DEMO_STAGES.length) {
-      setCurrentDemoStage(nextIndex)
-      const stage = DEMO_STAGES[nextIndex]
-      if (stage.action) {
-        await stage.action()
-      }
-      if (stage.locationId) {
-        setSelectedId(stage.locationId)
-      }
-      navigate(stage.page)
-    } else {
-      setDemoTourActive(false)
-    }
+  async function nextDemoStep() {
+    const next = demoStep + 1
+    if (next >= DEMO_STAGES.length) { setDemoActive(false); return }
+    setDemoStep(next)
+    const stage = DEMO_STAGES[next]
+    if (stage.action) await stage.action()
+    if (stage.syndrome) { setSyndrome(stage.syndrome); demoSyndromeRef.current = stage.syndrome }
+    if (stage.locationId) { setSelectedId(stage.locationId); selectLocation(stage.locationId); return }
+    navigate(stage.page)
   }
 
-  const activeDemoStage = DEMO_STAGES[currentDemoStage]
+  const activeStage = DEMO_STAGES[demoStep]
 
   return (
-    <div className="min-h-screen bg-sentinel-mist font-sans text-sentinel-ink antialiased flex flex-col">
+    <div
+      className="min-h-screen flex flex-col transition-theme"
+      style={{ background: 'var(--bg-app)', color: 'var(--text-main)' }}
+    >
       <Header
         currentPage={currentPage}
         onNavigate={navigate}
         districtName={DISTRICT_NAME}
-        onStartDemo={startDemoTour}
+        onStartDemo={startDemo}
+        darkMode={darkMode}
+        onToggleDark={() => setDarkMode(d => !d)}
       />
-      <DisclaimerBanner />
 
-      {/* SIH Guided Demo Tour Banner (if active) */}
-      {demoTourActive && activeDemoStage && (
+      {/* SIH Demo Banner */}
+      {demoActive && activeStage && (
         <aside
-          className="sticky top-0 z-50 border-b-2 border-sentinel-teal bg-sentinel-ink text-white px-4 py-3 shadow-md"
-          aria-label="Guided Presentation Walkthrough"
+          className="sticky top-0 z-50 border-b-2 px-4 py-3 shadow-lg"
+          style={{ background: 'var(--bg-header)', borderColor: 'var(--teal)', color: 'white' }}
+          role="status"
+          aria-live="polite"
         >
           <div className="mx-auto flex max-w-[1600px] flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-sentinel-teal text-white font-bold text-xs">
-                {activeDemoStage.step}/7
+              <div
+                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-white font-bold text-sm"
+                style={{ background: 'var(--teal)' }}
+              >
+                {activeStage.step}/{activeStage.total}
               </div>
+              <Sparkles className="h-4 w-4" style={{ color: '#fde68a' }} />
               <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-xs font-bold text-sentinel-teal tracking-wide uppercase">
-                    SIH 5-Minute Live Presentation Walkthrough
-                  </p>
-                  <span className="text-slate-400">·</span>
-                  <p className="text-xs font-bold text-white">{activeDemoStage.title}</p>
-                </div>
-                <p className="text-xs text-slate-300">{activeDemoStage.desc}</p>
+                <p className="text-xs font-bold tracking-wide uppercase" style={{ color: 'var(--teal)' }}>
+                  SIH Demo Walkthrough
+                </p>
+                <p className="text-sm font-semibold text-white">{activeStage.title}</p>
+                <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.6)' }}>{activeStage.desc}</p>
               </div>
             </div>
-
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={advanceDemoTour}
-                className="inline-flex min-h-[36px] items-center gap-1.5 rounded bg-sentinel-teal hover:bg-sentinel-teal-dark px-3.5 text-xs font-bold text-white shadow-xs cursor-pointer"
+                onClick={nextDemoStep}
+                className="inline-flex min-h-[36px] items-center gap-1.5 rounded-lg px-4 text-sm font-bold text-white cursor-pointer"
+                style={{ background: 'var(--teal)' }}
               >
-                <span>{currentDemoStage === DEMO_STAGES.length - 1 ? 'Finish Tour' : 'Next Presentation Step'}</span>
+                <span>{demoStep === DEMO_STAGES.length - 1 ? 'Finish Demo' : 'Next Step'}</span>
                 <ChevronRight className="h-4 w-4" />
               </button>
               <button
                 type="button"
-                onClick={() => setDemoTourActive(false)}
-                className="inline-flex min-h-[36px] items-center justify-center rounded border border-slate-700 bg-slate-800 p-2 text-slate-300 hover:text-white cursor-pointer"
-                title="Exit Demo Tour (Esc)"
+                onClick={() => setDemoActive(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg border cursor-pointer"
+                style={{ borderColor: 'rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)' }}
+                title="Exit demo (Esc)"
               >
                 <X className="h-4 w-4" />
               </button>
@@ -208,7 +227,7 @@ function App() {
         </aside>
       )}
 
-      {/* Main App Layout */}
+      {/* Main layout */}
       <div className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col lg:flex-row">
         <Sidebar
           currentPage={currentPage}
@@ -220,30 +239,31 @@ function App() {
           onMinScoreChange={setMinScore}
         />
 
-        <main className="min-w-0 flex-1 p-4 sm:p-6" id="main-content">
+        <main className="min-w-0 flex-1 p-4 sm:p-6" id="main-content" tabIndex={-1}>
           {currentPage === 'dashboard' && (
             <Dashboard
               selectedId={selectedId}
-              onSelectLocation={setSelectedId}
+              onSelectLocation={selectLocation}
               days={days}
               syndrome={syndrome}
               minScore={minScore}
-              isDemoMode={demoTourActive}
-              onNextDemoStep={advanceDemoTour}
             />
           )}
           {currentPage === 'map' && (
             <SurveillanceMap
-              onSelectLocation={setSelectedId}
-              onNavigateToLocation={selectLocation}
+              syndrome={syndrome}
+              days={days}
+              minScore={minScore}
+              onSelectLocation={selectLocation}
             />
           )}
           {currentPage === 'locations' && (
-            <Locations onSelectLocation={selectLocation} />
+            <Locations onSelectLocation={selectLocation} syndrome={syndrome} />
           )}
           {currentPage === 'location-details' && (
             <LocationDetails
               locationId={selectedId}
+              days={days}
               onBack={() => navigate('locations')}
               onSelectOtherLocation={selectLocation}
             />
@@ -259,13 +279,14 @@ function App() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
+      <footer
+        className="border-t py-4 text-center text-xs"
+        style={{ borderColor: 'var(--border)', background: 'var(--bg-card)', color: 'var(--text-muted)' }}
+      >
         <div className="mx-auto max-w-[1600px] px-6 flex flex-wrap items-center justify-between gap-2">
-          <p>
-            Swasthya Sentinel AI · Smart India Hackathon (SIH2026-STATE-04) Synthetic Demonstration
-          </p>
-          <p className="text-[11px] text-slate-400">
-            Complies with GIGW & WCAG AA Accessibility Standards · No Patient PHI
+          <p>Swasthya Sentinel AI · Smart India Hackathon SIH2026 · Synthetic Demonstration Only</p>
+          <p className="text-[11px]" style={{ color: 'var(--text-light)' }}>
+            GIGW &amp; WCAG 2.1 AA Compliant · No Patient Health Data Used
           </p>
         </div>
       </footer>

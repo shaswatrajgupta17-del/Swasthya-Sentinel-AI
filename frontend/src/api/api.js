@@ -1,6 +1,7 @@
-const API_BASE_URL = typeof window !== 'undefined' && window.location.hostname === '127.0.0.1'
-  ? 'http://127.0.0.1:8000'
-  : 'http://localhost:8000'
+const API_BASE_URL =
+  typeof window !== 'undefined' && window.location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:8000'
+    : 'http://localhost:8000'
 
 async function getJson(path) {
   try {
@@ -42,8 +43,9 @@ export function getLocations() {
   return getJson('/locations')
 }
 
-export function getRisks() {
-  return getJson('/risks')
+export function getRisks(syndrome = 'all') {
+  const q = syndrome && syndrome !== 'all' ? `?syndrome=${encodeURIComponent(syndrome)}` : ''
+  return getJson(`/risks${q}`)
 }
 
 export function getAlerts(status = null) {
@@ -55,8 +57,9 @@ export function getSignalsSummary() {
   return getJson('/signals/summary')
 }
 
-export function getRiskDetails(locationId) {
-  return getJson(`/risks/${locationId}`)
+export function getRiskDetails(locationId, syndrome = 'all') {
+  const q = syndrome && syndrome !== 'all' ? `?syndrome=${encodeURIComponent(syndrome)}` : ''
+  return getJson(`/risks/${locationId}${q}`)
 }
 
 export function getLocation(locationId) {
@@ -89,6 +92,10 @@ export function resetSimulation() {
 
 export function getNotificationStatus() {
   return getJson('/notifications/status')
+}
+
+export function sendTestNotification() {
+  return postJson('/notifications/test', {})
 }
 
 export function updateAlertStatus(alertId, status) {

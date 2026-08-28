@@ -1,360 +1,192 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Search, ArrowRight } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Bell, MapPin, Zap, CheckCircle2, ChevronRight, Activity } from 'lucide-react'
 import { getAlerts, updateAlertStatus } from '../api/api'
-import EmptyState from '../components/EmptyState'
-import RiskBadge from '../components/RiskBadge'
-
-function normaliseAlert(raw) {
-  const score = Number.isFinite(Number(raw.score_0_100)) ? Number(raw.score_0_100) : raw.severity === 'high' ? 85 : 50
-  const factorSummary = (raw.top_factors || [])
-    .map((factor) => `${factor.factor_name} (+${Number(factor.contribution).toFixed(1)} pts)`)
-    .join('; ')
-
-  return {
-    id: raw.id,
-    locationId: raw.location_id,
-    locationName: raw.location_name || raw.location_id,
-    severity: raw.severity || 'high',
-    status: raw.status || 'open',
-    createdAt: raw.created_at ? new Date(raw.created_at).toLocaleString('en-IN') : 'Recent',
-    score,
-    clusterId: raw.cluster_id,
-    modelVersion: raw.model_version || 'phase5-v1',
-    topFactors: raw.top_factors || [],
-    factorSummary: factorSummary || 'Multi-source signal anomaly elevated above historical baseline',
-  }
-}
 
 function Alerts({ onSelectLocation }) {
   const [alerts, setAlerts] = useState([])
-  const [activeFilter, setActiveFilter] = useState('All') // 'All' | 'High' | 'Open' | 'Investigating' | 'Acknowledged' | 'Resolved'
-  const [search, setSearch] = useState('')
-  const [selectedAlertId, setSelectedAlertId] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-
-  async function loadAlertsData() {
-    setLoading(true)
-    setError('')
-    try {
-      const data = await getAlerts()
-      const list = data.map(normaliseAlert)
-      setAlerts(list)
-      if (list.length > 0 && !selectedAlertId) setSelectedAlertId(list[0].id)
-    } catch {
-      setError('Unable to load alert operations from FastAPI')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const [filter, setFilter] = useState('all') // all, open, resolved
 
   useEffect(() => {
-    loadAlertsData()
+    async function load() {
+      try {
+        const data = await getAlerts()
+        setAlerts(data)
+      } catch {
+        setError('Unable to load alerts.')
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+    const t = setInterval(load, 5000)
+    return () => clearInterval(t)
   }, [])
 
-  async function changeStatus(alertId, newStatus) {
+  async function handleStatusChange(alertId, newStatus) {
     try {
       const updated = await updateAlertStatus(alertId, newStatus)
-      setAlerts((current) => current.map((a) => (a.id === alertId ? normaliseAlert(updated) : a)))
-    } catch (err) {
-      console.error('Failed to change alert status:', err)
+      setAlerts(curr => curr.map(a => a.id === alertId ? updated : a))
+    } catch {
+      alert('Failed to update alert status.')
     }
   }
 
-  const filteredAlerts = useMemo(() => {
-    return alerts.filter((a) => {
-      const matchesSearch =
-        a.locationName.toLowerCase().includes(search.toLowerCase()) ||
-        a.locationId.toLowerCase().includes(search.toLowerCase())
-
-      if (!matchesSearch) return false
-
-      if (activeFilter === 'All') return true
-      if (activeFilter === 'High') return a.severity === 'high'
-      if (activeFilter === 'Open') return a.status === 'open'
-      if (activeFilter === 'Investigating') return a.status === 'investigating'
-      if (activeFilter === 'Acknowledged') return a.status === 'acknowledged'
-      if (activeFilter === 'Resolved') return a.status === 'resolved'
-      return true
-    })
-  }, [alerts, search, activeFilter])
-
-  const selectedAlert = alerts.find((a) => a.id === selectedAlertId) || alerts[0]
-
   if (loading) {
-    return (
-      <div className="space-y-6" id="main-content" tabIndex={-1}>
-        <div className="h-96 rounded-lg border border-slate-200 bg-white p-6 animate-pulse">
-          <div className="h-6 w-64 bg-slate-200 rounded"></div>
-          <div className="mt-4 h-80 bg-slate-100 rounded"></div>
-        </div>
-      </div>
-    )
+    return <div className="card p-6 h-96 animate-pulse" />
   }
 
   if (error) {
-    return <EmptyState title="Alerts Service Error" message={error} />
+    return <div className="card p-6 text-red-600">{error}</div>
   }
 
-  const filterTabs = ['All', 'Open', 'Investigating', 'Acknowledged', 'Resolved', 'High']
+  const displayedAlerts = alerts.filter(a => {
+    if (filter === 'open') return a.status === 'open' || a.status === 'new'
+    if (filter === 'resolved') return a.status === 'resolved' || a.status === 'acknowledged' || a.status === 'investigating'
+    return true
+  })
 
   return (
-    <div className="space-y-6" id="main-content" tabIndex={-1}>
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white p-4 rounded-lg shadow-xs">
+    <div className="space-y-4">
+      {/* ── HEADER ── */}
+      <div className="card p-5 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-sentinel-ink sm:text-2xl">
-              Alerts & Response Operations
-            </h1>
-            <span className="rounded bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-700 uppercase">
-              Operational Queue
-            </span>
+          <div className="flex items-center gap-2 mb-1">
+            <Bell className="h-5 w-5" style={{ color: 'var(--teal)' }} />
+            <h1 className="text-xl font-bold" style={{ color: 'var(--text-main)' }}>Alerts &amp; Responses</h1>
           </div>
-          <p className="mt-0.5 text-xs text-slate-500">
-            Geographic threshold notices generated automatically when calculated risk scores cross $\ge 70$
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
+            Manage health signal alerts across the district
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-600 bg-slate-100 px-3 py-1.5 rounded-md">
-            Total Active Alerts: <strong>{alerts.filter((a) => a.status !== 'resolved').length}</strong>
-          </span>
+        <div className="flex items-center gap-2 text-sm bg-slate-100 p-1 rounded-lg" style={{ background: 'var(--bg-app)' }}>
+          <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>All ({alerts.length})</FilterButton>
+          <FilterButton active={filter === 'open'} onClick={() => setFilter('open')}>Action Required ({alerts.filter(a => a.status === 'open' || a.status === 'new').length})</FilterButton>
+          <FilterButton active={filter === 'resolved'} onClick={() => setFilter('resolved')}>Under Review / Resolved</FilterButton>
         </div>
       </div>
 
-      {/* Filter Tabs & Search */}
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-xs">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex flex-wrap gap-1">
-            {filterTabs.map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveFilter(tab)}
-                className={`min-h-[34px] rounded-md px-3 text-xs font-semibold cursor-pointer transition-colors ${
-                  activeFilter === tab
-                    ? 'bg-sentinel-teal text-white shadow-xs'
-                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="relative sm:w-64">
-            <Search className="h-4 w-4 absolute left-3 top-2.5 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search alert by village..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded-md border border-slate-200 bg-slate-50 pl-9 pr-3 py-1.5 text-xs font-medium text-sentinel-ink focus:border-sentinel-teal focus:bg-white focus:outline-none"
-            />
-          </div>
+      {/* ── ALERTS LIST ── */}
+      {displayedAlerts.length === 0 ? (
+        <div className="card p-12 text-center">
+          <CheckCircle2 className="h-10 w-10 mx-auto mb-3" style={{ color: 'var(--green)' }} />
+          <h2 className="text-lg font-bold" style={{ color: 'var(--text-main)' }}>No alerts found</h2>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>The district is operating normally.</p>
         </div>
-      </section>
+      ) : (
+        <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+          {displayedAlerts.map(alert => (
+            <div key={alert.id} className="card flex flex-col justify-between overflow-hidden">
+              <div className="p-4">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" style={{ color: alert.severity === 'high' ? 'var(--red)' : 'var(--amber)' }} />
+                    <span className="text-xs font-bold uppercase tracking-wider" style={{ color: alert.severity === 'high' ? 'var(--red)' : 'var(--amber)' }}>
+                      {alert.severity} Priority
+                    </span>
+                  </div>
+                  <AlertStatusBadge status={alert.status} />
+                </div>
 
-      {/* Main Alert Layout: List & Detailed Inspection Panel */}
-      <div className="grid items-start gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-        {/* Left: Alerts Table / List */}
-        <section className="space-y-3">
-          {filteredAlerts.length === 0 ? (
-            <EmptyState
-              title="No alerts in this view"
-              message="No alerts match the selected status filter."
-            />
-          ) : (
-            <div className="space-y-2.5">
-              {filteredAlerts.map((alert) => {
-                const isSelected = alert.id === selectedAlert?.id
-                const isHigh = alert.score >= 70
-                return (
-                  <div
-                    key={alert.id}
-                    onClick={() => setSelectedAlertId(alert.id)}
-                    className={`rounded-lg border bg-white p-4 shadow-xs transition-all cursor-pointer ${
-                      isSelected
-                        ? 'border-sentinel-teal ring-2 ring-sentinel-teal/20'
-                        : 'border-slate-200 hover:border-slate-300'
-                    } ${isHigh ? 'border-l-4 border-l-rose-500' : ''}`}
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold flex items-center gap-1.5" style={{ color: 'var(--text-main)' }}>
+                    <MapPin className="h-4 w-4" style={{ color: 'var(--text-muted)' }} />
+                    {alert.location_name}
+                  </h3>
+                  <p className="text-xs mt-1" style={{ color: 'var(--text-light)' }}>
+                    Risk Score: {Math.round(alert.score_0_100)} / 100
+                  </p>
+                </div>
+
+                <div className="p-3 rounded-md mb-4" style={{ background: 'var(--bg-app)', border: '1px solid var(--border)' }}>
+                  <p className="text-xs font-bold mb-1 flex items-center gap-1" style={{ color: 'var(--text-main)' }}>
+                    <Activity className="h-3.5 w-3.5" style={{ color: 'var(--teal)' }} /> Why flagged
+                  </p>
+                  <ul className="text-xs space-y-1 mt-2" style={{ color: 'var(--text-muted)' }}>
+                    {alert.top_factors.map((f, i) => (
+                      <li key={i} className="flex gap-1.5">
+                        <span className="w-1 h-1 bg-slate-400 rounded-full mt-1.5 shrink-0" />
+                        <span><span className="font-semibold text-slate-700">{plain(f.factor_name)}:</span> {f.note}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* Action Bar */}
+              <div className="border-t p-3 bg-slate-50 flex items-center justify-between gap-2" style={{ borderColor: 'var(--border)', background: 'var(--bg-app)' }}>
+                {alert.status === 'open' || alert.status === 'new' ? (
+                  <button
+                    onClick={() => handleStatusChange(alert.id, 'acknowledged')}
+                    className="flex-1 py-1.5 px-3 rounded text-xs font-bold text-white transition-colors cursor-pointer text-center"
+                    style={{ background: 'var(--teal)' }}
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-bold text-sentinel-ink">{alert.locationName}</p>
-                          <span className="text-[11px] font-mono text-slate-400">({alert.locationId})</span>
-                        </div>
-                        <p className="mt-0.5 text-xs text-slate-500">{alert.createdAt}</p>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <RiskBadge score={alert.score} category={alert.score >= 70 ? 'High' : 'Watch'} />
-                        <span
-                          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase ${
-                            alert.status === 'open'
-                              ? 'bg-rose-100 text-rose-700'
-                              : alert.status === 'investigating'
-                              ? 'bg-amber-100 text-amber-700'
-                              : alert.status === 'acknowledged'
-                              ? 'bg-blue-100 text-blue-700'
-                              : 'bg-emerald-100 text-emerald-700'
-                          }`}
-                        >
-                          {alert.status}
-                        </span>
-                      </div>
-                    </div>
-
-                    <p className="mt-2.5 text-xs text-slate-700 leading-relaxed line-clamp-2">
-                      {alert.factorSummary}
-                    </p>
-
-                    {/* Action buttons */}
-                    <div className="mt-3.5 flex flex-wrap items-center gap-2 border-t border-slate-100 pt-2.5">
-                      {alert.status === 'open' && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            changeStatus(alert.id, 'investigating')
-                          }}
-                          className="min-h-[32px] rounded bg-sentinel-teal px-3 text-xs font-bold text-white hover:bg-sentinel-teal-dark"
-                        >
-                          Investigate
-                        </button>
-                      )}
-                      {alert.status !== 'acknowledged' && alert.status !== 'resolved' && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            changeStatus(alert.id, 'acknowledged')
-                          }}
-                          className="min-h-[32px] rounded border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-700 hover:bg-slate-50"
-                        >
-                          Acknowledge
-                        </button>
-                      )}
-                      {alert.status !== 'resolved' && (
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            changeStatus(alert.id, 'resolved')
-                          }}
-                          className="min-h-[32px] rounded bg-emerald-600 px-3 text-xs font-bold text-white hover:bg-emerald-700"
-                        >
-                          Resolve
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* Right: Selected Alert Detail & Lifecycle Timeline */}
-        {selectedAlert && (
-          <aside className="rounded-lg border border-slate-200 bg-white p-5 shadow-xs space-y-4">
-            <div className="border-b border-slate-100 pb-3">
-              <span className="text-[10px] font-bold text-sentinel-teal uppercase tracking-wider">
-                Alert Protocol Detail
-              </span>
-              <h2 className="mt-1 text-lg font-bold text-sentinel-ink">
-                Alert #{selectedAlert.id} — {selectedAlert.locationName}
-              </h2>
-              <p className="text-xs text-slate-500">
-                Created: {selectedAlert.createdAt} · Model: {selectedAlert.modelVersion}
-              </p>
-            </div>
-
-            {/* Lifecycle Timeline Progression */}
-            <div>
-              <h3 className="text-xs font-bold text-sentinel-ink uppercase tracking-wider mb-2.5">
-                Surveillance Lifecycle Timeline
-              </h3>
-              <div className="flex items-center justify-between text-xs font-semibold">
-                <div className="flex flex-col items-center">
-                  <div className="h-6 w-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">
-                    ✓
-                  </div>
-                  <span className="mt-1 text-[11px] text-slate-700">Detected</span>
-                </div>
-                <div className="h-0.5 flex-1 bg-emerald-300 mx-1"></div>
-
-                <div className="flex flex-col items-center">
-                  <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
-                    selectedAlert.status !== 'open' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {selectedAlert.status !== 'open' ? '✓' : '2'}
-                  </div>
-                  <span className="mt-1 text-[11px] text-slate-700">Investigating</span>
-                </div>
-                <div className={`h-0.5 flex-1 mx-1 ${
-                  selectedAlert.status === 'acknowledged' || selectedAlert.status === 'resolved' ? 'bg-emerald-300' : 'bg-slate-200'
-                }`}></div>
-
-                <div className="flex flex-col items-center">
-                  <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
-                    selectedAlert.status === 'acknowledged' || selectedAlert.status === 'resolved' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {selectedAlert.status === 'acknowledged' || selectedAlert.status === 'resolved' ? '✓' : '3'}
-                  </div>
-                  <span className="mt-1 text-[11px] text-slate-700">Acknowledged</span>
-                </div>
-                <div className={`h-0.5 flex-1 mx-1 ${
-                  selectedAlert.status === 'resolved' ? 'bg-emerald-300' : 'bg-slate-200'
-                }`}></div>
-
-                <div className="flex flex-col items-center">
-                  <div className={`h-6 w-6 rounded-full flex items-center justify-center text-xs ${
-                    selectedAlert.status === 'resolved' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600'
-                  }`}>
-                    {selectedAlert.status === 'resolved' ? '✓' : '4'}
-                  </div>
-                  <span className="mt-1 text-[11px] text-slate-700">Resolved</span>
-                </div>
+                    Acknowledge
+                  </button>
+                ) : (
+                  <span className="flex-1 text-xs text-center font-medium" style={{ color: 'var(--text-light)' }}>
+                    {alert.status === 'acknowledged' || alert.status === 'investigating' ? 'Under review' : 'Resolved'}
+                  </span>
+                )}
+                
+                <button
+                  onClick={() => onSelectLocation(alert.location_id)}
+                  className="flex-1 py-1.5 px-3 rounded border text-xs font-bold transition-colors flex items-center justify-center gap-1 cursor-pointer hover:bg-slate-100"
+                  style={{ borderColor: 'var(--border)', color: 'var(--text-main)', background: 'var(--bg-card)' }}
+                >
+                  View Village <ChevronRight className="h-3 w-3" />
+                </button>
               </div>
             </div>
-
-            {/* Contributing Factors */}
-            <div className="border-t border-slate-100 pt-3">
-              <h3 className="text-xs font-bold text-sentinel-ink mb-2">
-                Contributing Anomaly Factors
-              </h3>
-              <div className="space-y-2">
-                {selectedAlert.topFactors.map((tf) => (
-                  <div key={tf.factor_name} className="rounded bg-slate-50 p-2 text-xs">
-                    <div className="flex items-center justify-between font-bold text-sentinel-ink">
-                      <span>{tf.factor_name}</span>
-                      <span className="font-mono text-sentinel-teal">+{Number(tf.contribution).toFixed(1)} pts</span>
-                    </div>
-                    {tf.note && <p className="mt-1 text-[11px] text-slate-500">{tf.note}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Direct Jump Button */}
-            {onSelectLocation && (
-              <button
-                type="button"
-                onClick={() => onSelectLocation(selectedAlert.locationId)}
-                className="w-full flex items-center justify-center gap-1.5 rounded-md bg-sentinel-teal py-2 text-xs font-bold text-white hover:bg-sentinel-teal-dark cursor-pointer"
-              >
-                <span>Investigate {selectedAlert.locationName} Node</span>
-                <ArrowRight className="h-4 w-4" />
-              </button>
-            )}
-          </aside>
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   )
+}
+
+function FilterButton({ active, onClick, children }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1.5 rounded-md text-xs font-bold transition-colors cursor-pointer ${
+        active ? 'bg-white shadow-sm text-sentinel-ink border border-slate-200' : 'text-slate-500 hover:text-slate-700'
+      }`}
+      style={active ? { background: 'var(--bg-card)', color: 'var(--text-main)', borderColor: 'var(--border)' } : { color: 'var(--text-muted)' }}
+    >
+      {children}
+    </button>
+  )
+}
+
+function AlertStatusBadge({ status }) {
+  const map = {
+    open: { label: 'Open', bg: 'rgba(220,38,38,0.1)', fg: 'var(--red)' },
+    new: { label: 'New', bg: 'rgba(220,38,38,0.1)', fg: 'var(--red)' },
+    investigating: { label: 'Reviewing', bg: 'rgba(217,119,6,0.1)', fg: 'var(--amber)' },
+    acknowledged: { label: 'Acknowledged', bg: 'rgba(14,124,123,0.1)', fg: 'var(--teal)' },
+    resolved: { label: 'Resolved', bg: 'rgba(42,157,143,0.1)', fg: 'var(--green)' },
+  }
+  const s = map[status] || { label: status, bg: 'var(--bg-app)', fg: 'var(--text-muted)' }
+  return (
+    <span className="text-[10px] font-bold px-2 py-0.5 rounded uppercase" style={{ background: s.bg, color: s.fg }}>
+      {s.label}
+    </span>
+  )
+}
+
+function plain(tech) {
+  const map = {
+    "ASHA Syndromic Reports": "ASHA",
+    "OPD Clinical Visits": "Clinic",
+    "Pharmacy Product Demand": "Pharmacy",
+    "Multi-Source Corroboration": "Matching sources",
+    "Spatial Cluster Grouping": "Nearby villages",
+    "Environmental Indicators": "Environment",
+  }
+  return map[tech] || tech
 }
 
 export default Alerts
