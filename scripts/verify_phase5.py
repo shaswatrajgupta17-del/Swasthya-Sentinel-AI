@@ -130,7 +130,7 @@ def main() -> None:
     # 11. Alerts Verification
     print("\n11. ALERTS THRESHOLD VERIFICATION")
     print("-" * 50)
-    api_alerts = list_alerts(session)
+    api_alerts = list_alerts(status=None, db=session)
     print(f"Active alerts count: {len(api_alerts)}")
     assert len(api_alerts) == 3
     for a in api_alerts:

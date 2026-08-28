@@ -1,24 +1,40 @@
-// REST wrapper for the local FastAPI server. No health or risk logic belongs here.
+// REST wrapper for the local FastAPI server.
 const API_BASE_URL = 'http://localhost:8000'
 
 async function getJson(path) {
-  const response = await fetch(`${API_BASE_URL}${path}`)
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`)
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`)
+    if (!response.ok) {
+      console.error(`[API GET Failed] ${path} -> HTTP ${response.status}`)
+      throw new Error(`API request failed: ${response.status} on ${path}`)
+    }
+    return await response.json()
+  } catch (err) {
+    console.error(`[API Network Error] GET ${path}:`, err.message)
+    throw err
   }
-  return response.json()
 }
 
 async function postJson(path, body) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  })
-  if (!response.ok) {
-    throw new Error(`API request failed: ${response.status}`)
+  try {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    if (!response.ok) {
+      console.error(`[API POST Failed] ${path} -> HTTP ${response.status}`)
+      throw new Error(`API request failed: ${response.status} on ${path}`)
+    }
+    return await response.json()
+  } catch (err) {
+    console.error(`[API Network Error] POST ${path}:`, err.message)
+    throw err
   }
-  return response.json()
+}
+
+export function getHealth() {
+  return getJson('/health')
 }
 
 export function getLocations() {
@@ -29,8 +45,9 @@ export function getRisks() {
   return getJson('/risks')
 }
 
-export function getAlerts() {
-  return getJson('/alerts')
+export function getAlerts(status = null) {
+  const query = status ? `?status=${encodeURIComponent(status)}` : ''
+  return getJson(`/alerts${query}`)
 }
 
 export function getSignalsSummary() {
@@ -57,7 +74,7 @@ export function getSimulationStatus() {
   return getJson('/simulation/status')
 }
 
-export function startSimulation(scenario, speed) {
+export function startSimulation(scenario = 'NORMAL', speed = 1.0) {
   return postJson('/simulation/start', { scenario, speed })
 }
 
@@ -77,3 +94,6 @@ export function updateAlertStatus(alertId, status) {
   return postJson(`/alerts/${alertId}/status`, { status })
 }
 
+export function triggerRiskRun() {
+  return postJson('/internal/run-risk', {})
+}
