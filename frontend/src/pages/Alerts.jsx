@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getAlerts } from '../api/api'
+import { getAlerts, updateAlertStatus } from '../api/api'
 import EmptyState from '../components/EmptyState'
 import RiskBadge from '../components/RiskBadge'
 
@@ -28,6 +28,15 @@ function Alerts() {
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+
+  async function changeStatus(alertId, status) {
+    try {
+      const updated = await updateAlertStatus(alertId, status)
+      setAlerts((current) => current.map((alert) => alert.id === alertId ? normaliseAlert(updated) : alert))
+    } catch {
+      setError('Unable to update this alert. Try again.')
+    }
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -123,6 +132,11 @@ function Alerts() {
                   </div>
                 </div>
                 <p className="mt-3 text-sm text-slate-700">{alert.topFactor}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {alert.status === 'Open' && <button type="button" onClick={() => changeStatus(alert.id, 'investigating')} className="min-h-9 rounded-md bg-sentinel-teal px-2.5 text-xs font-medium text-white">Investigate</button>}
+                  {alert.status !== 'Acknowledged' && alert.status !== 'Resolved' && <button type="button" onClick={() => changeStatus(alert.id, 'acknowledged')} className="min-h-9 rounded-md bg-sentinel-mist px-2.5 text-xs font-medium text-sentinel-ink">Acknowledge</button>}
+                  {alert.status !== 'Resolved' && <button type="button" onClick={() => changeStatus(alert.id, 'resolved')} className="min-h-9 rounded-md border border-slate-200 bg-white px-2.5 text-xs font-medium text-sentinel-ink">Resolve</button>}
+                </div>
                 <p className="mt-1 text-xs text-slate-500">Synthetic aggregate data · not a diagnosis</p>
               </li>
             )

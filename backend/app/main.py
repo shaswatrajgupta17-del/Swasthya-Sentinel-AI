@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers import alerts, health, internal, locations, risks, signals
+from .routers import alerts, health, insights, internal, locations, notifications, risks, signals, simulation, trends
 
 
 app = FastAPI(
@@ -25,3 +25,7 @@ app.include_router(signals.router)
 app.include_router(risks.router)
 app.include_router(alerts.router)
 app.include_router(internal.router)
+app.include_router(insights.router)
+app.include_router(simulation.router)
+app.include_router(trends.router)
+app.include_router(notifications.router)

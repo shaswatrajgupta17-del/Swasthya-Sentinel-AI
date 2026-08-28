@@ -1,10 +1,13 @@
-import { Shield } from 'lucide-react'
+import { Activity, Bell, BrainCircuit, Map, Shield, Workflow } from 'lucide-react'
 
 function Header({ currentPage, onNavigate, districtName }) {
   const links = [
-    { id: 'dashboard', label: 'Dashboard' },
-    { id: 'alerts', label: 'Alerts' },
-    { id: 'about', label: 'About' },
+    { id: 'dashboard', label: 'Dashboard', icon: Activity },
+    { id: 'locations', label: 'Locations', icon: Map },
+    { id: 'alerts', label: 'Alerts', icon: Bell },
+    { id: 'insights', label: 'Insights', icon: BrainCircuit },
+    { id: 'notifications', label: 'Notifications', icon: Workflow },
+    { id: 'about', label: 'About', icon: Shield },
   ]
 
   return (
@@ -54,6 +57,7 @@ function Header({ currentPage, onNavigate, districtName }) {
                   : 'text-slate-600 hover:bg-sentinel-mist'
               }`}
             >
+              <link.icon className="mr-1.5 inline-block h-3.5 w-3.5" aria-hidden="true" />
               {link.label}
             </button>
           )

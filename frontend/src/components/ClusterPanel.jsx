@@ -1,4 +1,4 @@
-import { Database, Info, Layers, MapPinned } from 'lucide-react'
+import { Database, MapPinned } from 'lucide-react'
 import RiskBadge from './RiskBadge'
 
 const FACTOR_COLORS = {
@@ -54,7 +54,9 @@ function ClusterPanel({ location, signalSummary }) {
             {factors.map((factor) => {
               const color = FACTOR_COLORS[factor.factor_name] || '#0E7C7B'
               const maxPoints = 30.0
-              const barWidthPct = Math.min(100, Math.max(2, (factor.contribution / maxPoints) * 100))
+              const contribution = factor.live_contribution ?? factor.contribution
+              const percentage = factor.live_percentage ?? factor.percentage
+              const barWidthPct = Math.min(100, Math.max(2, (contribution / maxPoints) * 100))
 
               return (
                 <div key={factor.factor_name} className="rounded-md border border-slate-100 bg-slate-50/70 p-2.5">
@@ -64,9 +66,9 @@ function ClusterPanel({ location, signalSummary }) {
                       {factor.factor_name}
                     </span>
                     <div className="flex items-center gap-1.5 font-mono text-[11px]">
-                      <span className="font-semibold text-sentinel-ink">+{factor.contribution.toFixed(1)} pts</span>
+                      <span className="font-semibold text-sentinel-ink">+{contribution.toFixed(1)} pts</span>
                       {location.riskScore > 0 && (
-                        <span className="text-slate-400">({factor.percentage.toFixed(0)}%)</span>
+                        <span className="text-slate-400">({percentage.toFixed(0)}%)</span>
                       )}
                     </div>
                   </div>
@@ -78,7 +80,7 @@ function ClusterPanel({ location, signalSummary }) {
                       style={{
                         width: `${barWidthPct}%`,
                         backgroundColor: color,
-                        opacity: factor.contribution > 0 ? 0.9 : 0.2,
+                        opacity: contribution > 0 ? 0.9 : 0.2,
                       }}
                     />
                   </div>

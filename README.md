@@ -39,6 +39,10 @@ The **ML/risk engine** produces numbers. An LLM, if used, may only **summarize t
 - **Cluster detection** — spatial grouping of unusual activity  
 - **Explainable scoring** — 40% symptom anomaly, 25% pharmacy, 20% environment, 15% historical pattern (Stage 1)  
 - **Alert workflow** — in-app alerts plus an optional n8n polling notification flow
+- **Live synthetic surveillance** — deterministic scenario controls with start, pause, reset, and speed
+- **Investigation workflow** — location detail, trends, baseline comparisons, factors, and alert lifecycle
+- **Model insights** — transparent Phase 5 weighted anomaly output and current simulation state
+- **Notification status** — honest n8n/webhook configuration state without fake delivery claims
 - **Scenario simulation** — planted baseline vs outbreak-like periods in synthetic data  
 - **Privacy-first architecture** — aggregates only; no person-level health information  
 
@@ -116,6 +120,37 @@ See `phases.md`. **P0** must ship for SIH. **P1** = n8n and Azure. Phases 1–10
 5. **Verify:** with FastAPI running, `python scripts/verify_phase9.py --api-url http://127.0.0.1:8000`
 6. **n8n:** optionally import `n8n/high-risk-alert-poll.json`, configure `SENTINEL_NOTIFICATION_WEBHOOK_URL`, and activate the workflow. It polls `/alerts?status=open`, filters scores at least 70, and posts location, score, and top factors. The app works when n8n is stopped.
 7. **Azure:** deferred for this synthetic prototype; no Azure credentials or runtime are required
+
+## Product upgrade boundaries
+
+- **Real implementation:** SQLite historical signals, deterministic Phase 5 risk engine, persisted Phase 6 factors, FastAPI APIs, Leaflet map, trend calculations, alert lifecycle, and n8n workflow export.
+- **Synthetic simulation:** `/simulation` applies reproducible scenario multipliers in backend memory. It never rewrites historical CSV or SQLite signal rows.
+- **Model behavior:** `phase5-v1` remains the numeric risk source. Scenario overlays are labeled simulation effects and do not claim external real-time surveillance or fabricated model metrics.
+- **External infrastructure:** n8n delivery requires the separately configured `SENTINEL_NOTIFICATION_WEBHOOK_URL`. Azure is deferred.
+
+## Simulation scenarios
+
+On Dashboard, choose a scenario and start the controlled stream:
+
+- `NORMAL` — small deterministic baseline fluctuation
+- `FEVER CLUSTER` — nearby East Block signals rise together
+- `RESPIRATORY CLUSTER` — nearby North Block signals rise together
+- `PHARMACY SURGE` — medicine demand rises in the planted cluster
+- `ENVIRONMENTAL EVENT` — environmental indicators rise in selected locations
+
+The simulation clock is process-local and deterministic for a given tick. Reset returns to the baseline view. It is a demonstration stream, not an external data feed.
+
+## Upgrade API surface
+
+- `GET /locations/{location_id}`
+- `GET /signals/trends/{location_id}?days=14`
+- `GET /insights`
+- `GET /simulation/status`
+- `POST /simulation/start`, `/simulation/pause`, `/simulation/reset`
+- `POST /alerts/{alert_id}/status`
+- `GET /notifications/status`
+
+Alerts are generated from the existing risk threshold and are not created on every simulation tick. The UI supports Investigate, Acknowledge, and Resolve transitions against the synthetic alert row.
 
 ---
 

@@ -26,6 +26,7 @@ Living log of decisions and status. Update this file when an important decision 
 | 2026-08-28 | Phase 7 uses n8n polling with `GET /alerts?status=open` and a configurable demo webhook | Keeps notification delivery optional while preserving the local app when n8n is unavailable |
 | 2026-08-28 | Phase 8 defers Azure; the project will use the local Vite + FastAPI + SQLite demo path | Azure hosting and LLM summarization add external configuration without improving this synthetic prototype; risk scores and factor explanations are already complete locally |
 | 2026-08-28 | Phase 9 adds a repeatable local integration check at `scripts/verify_phase9.py` | Verifies seed/score/API invariants without adding a test dependency or external service |
+| 2026-08-28 | Post-Phase-10 product upgrade keeps simulation overlays in backend memory and preserves SQLite history | Adds live-demo behavior without changing the frozen synthetic dataset or Phase 5 score ownership |
 | 2026-08-28 | Phase 10 freezes the local demo at generator seed `20260828`, model `phase5-v1`, and High threshold `70` | Makes the SIH walkthrough repeatable without requiring a public URL or external infrastructure |
 
 ---
@@ -39,6 +40,7 @@ Phase 7 adds the exported n8n polling workflow under `n8n/`. It reads open alert
 Phase 8 selects Option A from `phases.md`: Azure is deferred and the local Vite + FastAPI + SQLite path remains the demo deployment. No Azure credentials, SDK, hosting configuration, or LLM summary endpoint is added. Existing risk factors remain the sole explanation source.
 Phase 9 adds the repeatable local verification script, an explicit engine-not-run dashboard state, current run instructions, and end-to-end checks for seed, risk engine, API, map, alerts, factors, n8n compatibility, and non-diagnostic copy. Phase 10 has not started.
 Phase 10 finalizes `DEMO_SCRIPT.md`, freezes the synthetic generator seed (`20260828`), risk model (`phase5-v1`), and High alert threshold (`70`), and selects the local Vite + FastAPI + SQLite deployment. A public URL is optional and deferred; no external infrastructure is required for the presentation.
+The post-Phase-10 product upgrade adds a deterministic in-memory simulation layer, trend and insights endpoints, alert lifecycle transitions, location investigation, live status controls, and notification status visibility. Historical SQLite signals and the frozen risk engine remain unchanged.
 
 ---
 
@@ -61,12 +63,13 @@ Phase 10 finalizes `DEMO_SCRIPT.md`, freezes the synthetic generator seed (`2026
 - **Phase 8:** Azure deferral decision documented; local demo remains the supported deployment path and no external service is required.
 - **Phase 9:** Local integration verification script, engine-not-run state, updated run instructions, and verified seed → engine → API → frontend demo path.
 - **Phase 10:** Finalized five-minute demo script, frozen seed/model/threshold, repeatable local preflight, and documented local deployment decision.
+- **Product upgrade:** Deterministic synthetic simulation, backend-driven trend comparisons, investigation workflow, model insights, notification state, and expanded navigation. This is not a new numbered roadmap phase.
 
 ---
 
 ## Current task
 
-Phase 10 deployment and demonstration is complete. Do not start work beyond the documented roadmap.
+Phase 10 deployment and demonstration is complete. The post-Phase-10 product upgrade is complete; no new numbered roadmap phase has started.
 
 ---
 

@@ -29,7 +29,7 @@ function About() {
       <section className="rounded-lg border border-slate-200 bg-sentinel-card p-4 shadow-sm">
         <h2 className="text-base font-semibold text-sentinel-ink">Technology overview</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">
-          <li><strong>Frontend:</strong> React 18, Vite, JavaScript, Tailwind CSS, Lucide icons</li>
+          <li><strong>Frontend:</strong> React, Vite, JavaScript, Tailwind CSS, Lucide icons</li>
           <li><strong>Maps & Visualization:</strong> React Leaflet with OpenStreetMap tiles, Recharts</li>
           <li><strong>Backend API:</strong> Python FastAPI, SQLAlchemy ORM</li>
           <li><strong>Database:</strong> SQLite local store for locations, aggregated signals, risks, and alerts</li>

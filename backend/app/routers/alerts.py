@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -7,6 +8,10 @@ from ..models import Alert, Location, RiskFactor, RiskScore
 
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
+
+
+class AlertStatusRequest(BaseModel):
+    status: str
 
 
 def alert_response(
@@ -69,4 +74,21 @@ def acknowledge_alert(alert_id: int, db: Session = Depends(get_db)):
         .where(RiskFactor.location_id == alert.location_id)
         .order_by(RiskFactor.contribution.desc())
     ).scalars().all()
+    return alert_response(alert, location, risk, factors)
+
+
+@router.post("/{alert_id}/status")
+def update_alert_status(alert_id: int, request: AlertStatusRequest, db: Session = Depends(get_db)):
+    allowed_statuses = {"open", "new", "investigating", "acknowledged", "resolved"}
+    if request.status not in allowed_statuses:
+        raise HTTPException(status_code=422, detail="Unsupported synthetic alert status")
+    alert = db.get(Alert, alert_id)
+    if alert is None:
+        raise HTTPException(status_code=404, detail="Synthetic alert not found")
+    alert.status = request.status
+    db.commit()
+    db.refresh(alert)
+    location = db.scalar(select(Location).where(Location.location_id == alert.location_id))
+    risk = db.scalar(select(RiskScore).where(RiskScore.location_id == alert.location_id))
+    factors = db.scalars(select(RiskFactor).where(RiskFactor.location_id == alert.location_id).order_by(RiskFactor.contribution.desc())).all()
     return alert_response(alert, location, risk, factors)

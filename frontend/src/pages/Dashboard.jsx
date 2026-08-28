@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Activity, Bell, Clock, MapPinned } from 'lucide-react'
-import { getAlerts, getLocations, getRisks, getSignalsSummary } from '../api/api'
+import { getAlerts, getLocations, getRisks, getSignalsSummary, getSimulationStatus, startSimulation, pauseSimulation, resetSimulation, getSignalTrends } from '../api/api'
 import ClusterPanel from '../components/ClusterPanel'
 import EmptyState from '../components/EmptyState'
 import HealthMap from '../components/HealthMap'
 import KPICard from '../components/KPICard'
 import RiskBadge from '../components/RiskBadge'
+import LiveStatus from '../components/LiveStatus'
+import SimulationControls from '../components/SimulationControls'
+import TrendPanel from '../components/TrendPanel'
 
 function riskCategory(score) {
   if (score >= 70) return 'High'
@@ -20,6 +23,10 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
   const [signalSummary, setSignalSummary] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [simulation, setSimulation] = useState(null)
+  const [scenario, setScenario] = useState('NORMAL')
+  const [speed, setSpeed] = useState(1)
+  const [trends, setTrends] = useState(null)
 
   useEffect(() => {
     let cancelled = false
@@ -36,6 +43,7 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
         setRisks(riskData)
         setAlerts(alertData)
         setSignalSummary(summaryData)
+        setSimulation(await getSimulationStatus())
         onSelectLocation((currentId) => currentId || locationData[0]?.location_id || null)
       } catch {
         if (!cancelled) setError('Backend unavailable. Start FastAPI server.')
@@ -47,6 +55,26 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
     loadDashboard()
     return () => { cancelled = true }
   }, [onSelectLocation])
+
+  useEffect(() => {
+    if (!selectedId) return
+    getSignalTrends(selectedId, days).then(setTrends).catch(() => setTrends(null))
+  }, [selectedId, days, simulation?.tick])
+
+  useEffect(() => {
+    const timer = setInterval(async () => {
+      try {
+        const next = await getSimulationStatus()
+        setSimulation(next)
+        if (next.running) setRisks(await getRisks())
+      } catch { /* Initial load owns the visible error state. */ }
+    }, 3000)
+    return () => clearInterval(timer)
+  }, [])
+
+  async function handleStart() { setSimulation(await startSimulation(scenario, speed)) }
+  async function handlePause() { setSimulation(await pauseSimulation()) }
+  async function handleReset() { setSimulation(await resetSimulation()); setRisks(await getRisks()) }
 
   const apiLocations = useMemo(() => {
     const riskByLocationId = new Map(risks.map((risk) => [risk.location_id, risk]))
@@ -87,11 +115,14 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
 
   return (
     <div className="space-y-6">
+      <LiveStatus simulation={simulation} onStart={handleStart} onPause={handlePause} onReset={handleReset} />
       <div>
         <h1 className="text-xl font-semibold text-sentinel-ink sm:text-2xl">District overview</h1>
         <p className="mt-1 text-sm text-slate-600">Map-first command centre · last {days} days · synthetic demonstration data</p>
         {syndrome !== 'All' ? <p className="mt-1 text-xs text-slate-500">Displaying aggregated syndromic overview across all channels.</p> : null}
       </div>
+
+      <section className="rounded-lg border border-slate-200 bg-sentinel-card p-4 shadow-sm"><div className="mb-3"><h2 className="text-base font-semibold text-sentinel-ink">Simulation controls</h2><p className="text-xs text-slate-500">Controlled synthetic movement over immutable historical data</p></div><SimulationControls scenario={scenario} speed={speed} onScenarioChange={setScenario} onSpeedChange={setSpeed} /></section>
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Key figures">
         <KPICard label="Locations monitored" value={locations.length} hint="From synthetic SQLite data" icon={MapPinned} />
@@ -133,6 +164,7 @@ function Dashboard({ selectedId, onSelectLocation, days, syndrome, minScore }) {
           </ul>
         )}
       </section>
+      <TrendPanel trends={trends} />
     </div>
   )
 }
