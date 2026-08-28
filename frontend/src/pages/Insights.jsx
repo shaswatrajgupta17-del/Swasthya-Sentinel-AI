@@ -18,7 +18,7 @@ function Insights() {
         const [insightsRes, risksRes] = await Promise.all([getInsights(), getRisks()])
         setData(insightsRes)
         setRisks(risksRes)
-      } catch (err) {
+      } catch {
         setError('Unable to retrieve model telemetry from FastAPI')
       } finally {
         setLoading(false)

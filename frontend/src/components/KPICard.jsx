@@ -1,4 +1,4 @@
-function KPICard({ label, value, hint, icon: Icon, color = 'teal', trend }) {
+function KPICard({ label, value, hint, icon: Icon, color = 'teal' }) {
   const colorMap = {
     teal: 'bg-sentinel-teal/10 text-sentinel-teal border-sentinel-teal/20',
     rose: 'bg-rose-50 text-rose-700 border-rose-200',

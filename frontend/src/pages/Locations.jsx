@@ -27,7 +27,7 @@ function Locations({ onSelectLocation }) {
         const [locData, riskData] = await Promise.all([getLocations(), getRisks()])
         setLocations(locData)
         setRisks(riskData)
-      } catch (err) {
+      } catch {
         setError('Unable to load location directory from FastAPI')
       } finally {
         setLoading(false)

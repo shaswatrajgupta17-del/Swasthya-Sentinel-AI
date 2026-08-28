@@ -17,7 +17,6 @@ import EmptyState from '../components/EmptyState'
 import HealthMap from '../components/HealthMap'
 import KPICard from '../components/KPICard'
 import RiskBadge from '../components/RiskBadge'
-import LiveStatus from '../components/LiveStatus'
 import SimulationControls from '../components/SimulationControls'
 import TrendPanel from '../components/TrendPanel'
 import WhatChanged from '../components/WhatChanged'
@@ -29,7 +28,7 @@ function riskCategory(score) {
   return 'Low'
 }
 
-function Dashboard({ selectedId, onSelectLocation, days = 7, syndrome = 'All', minScore = 0, isDemoMode, onNextDemoStep }) {
+function Dashboard({ selectedId, onSelectLocation, days = 7, minScore = 0 }) {
   const [locations, setLocations] = useState([])
   const [risks, setRisks] = useState([])
   const [alerts, setAlerts] = useState([])
@@ -109,7 +108,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 7, syndrome = 'All', m
           setRisks(updatedRisks)
           setAlerts(updatedAlerts)
         }
-      } catch (e) {
+      } catch {
         // Polling error silently logged; initial load owns critical error screen
       }
     }, 3000)
@@ -290,7 +289,11 @@ function Dashboard({ selectedId, onSelectLocation, days = 7, syndrome = 'All', m
         />
         <KPICard
           label="Surveillance Window"
-          value={signalSummary ? `${signalSummary.date_range.start.slice(5)} → ${signalSummary.date_range.end.slice(5)}` : '60 Days'}
+          value={
+            signalSummary?.date_range?.start && signalSummary?.date_range?.end
+              ? `${String(signalSummary.date_range.start).slice(5)} → ${String(signalSummary.date_range.end).slice(5)}`
+              : '60 Days'
+          }
           hint="Synthetic Aggregate Window"
           icon={Clock}
           color="slate"

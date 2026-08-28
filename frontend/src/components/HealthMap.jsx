@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo } from 'react'
 import { CircleMarker, MapContainer, Popup, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet'
-import { Layers, MapPin, Sparkles, Filter, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 
 const RISK_COLORS = {
@@ -12,8 +12,12 @@ const RISK_COLORS = {
 function SelectedLocationView({ location }) {
   const map = useMap()
   useEffect(() => {
-    if (location && Number.isFinite(location.lat) && Number.isFinite(location.lng)) {
-      map.flyTo([location.lat, location.lng], 13.5, { duration: 0.8 })
+    if (location && typeof location.lat === 'number' && typeof location.lng === 'number' && Number.isFinite(location.lat) && Number.isFinite(location.lng)) {
+      try {
+        map.flyTo([location.lat, location.lng], 13.5, { duration: 0.8 })
+      } catch (e) {
+        console.warn('Leaflet flyTo skipped:', e)
+      }
     }
   }, [location, map])
   return null
@@ -22,9 +26,16 @@ function SelectedLocationView({ location }) {
 function FitLocations({ locations }) {
   const map = useMap()
   useEffect(() => {
-    if (locations.length > 1) {
-      const bounds = locations.map((loc) => [loc.lat, loc.lng])
-      map.fitBounds(bounds, { padding: [35, 35] })
+    if (Array.isArray(locations)) {
+      const valid = locations.filter((loc) => loc && typeof loc.lat === 'number' && typeof loc.lng === 'number' && Number.isFinite(loc.lat) && Number.isFinite(loc.lng))
+      if (valid.length > 1) {
+        try {
+          const bounds = valid.map((loc) => [loc.lat, loc.lng])
+          map.fitBounds(bounds, { padding: [35, 35] })
+        } catch (e) {
+          console.warn('Leaflet fitBounds skipped:', e)
+        }
+      }
     }
   }, [locations, map])
   return null
@@ -38,15 +49,16 @@ function HealthMap({
   height = '440px',
   showClusterConnectors = true,
 }) {
-  const [activeLayer, setActiveLayer] = useState('risk') // 'risk' | 'clusters' | 'all'
-  const initialCenter = locations.length > 0 ? [locations[0].lat, locations[0].lng] : [23.18, 79.95]
+  const initialCenter = locations.length > 0 && Number.isFinite(locations[0]?.lat) && Number.isFinite(locations[0]?.lng)
+    ? [locations[0].lat, locations[0].lng]
+    : [23.18, 79.95]
 
   // Group locations by cluster to draw subtle spatial connection lines
   const clusterLines = useMemo(() => {
-    if (!showClusterConnectors) return []
+    if (!showClusterConnectors || !Array.isArray(locations)) return []
     const byCluster = new Map()
     locations.forEach((loc) => {
-      if (loc.clusterId) {
+      if (loc && loc.clusterId && Number.isFinite(loc.lat) && Number.isFinite(loc.lng)) {
         if (!byCluster.has(loc.clusterId)) byCluster.set(loc.clusterId, [])
         byCluster.get(loc.clusterId).push(loc)
       }
@@ -56,11 +68,14 @@ function HealthMap({
     byCluster.forEach((locs, clusterId) => {
       if (locs.length > 1) {
         const coords = locs.map((l) => [l.lat, l.lng])
-        // Complete the loop if 3+ items
         if (locs.length >= 3) {
           coords.push(coords[0])
         }
-        lines.push({ clusterId, coords, avgScore: Math.round(locs.reduce((acc, cur) => acc + cur.riskScore, 0) / locs.length) })
+        lines.push({
+          clusterId,
+          coords,
+          avgScore: Math.round(locs.reduce((acc, cur) => acc + (cur.riskScore || 0), 0) / locs.length),
+        })
       }
     })
     return lines
@@ -80,7 +95,7 @@ function HealthMap({
             </span>
           </div>
           <p className="text-xs text-slate-500">
-            DBSCAN spatial radius $eps=2.5\text{ km}$ · Click a node to inspect factor breakdown
+            DBSCAN spatial radius (eps = 2.5 km) · Click a node to inspect factor breakdown
           </p>
         </div>
 
@@ -134,6 +149,9 @@ function HealthMap({
 
           {/* Location Risk Markers */}
           {locations.map((loc) => {
+            if (!loc || typeof loc.lat !== 'number' || typeof loc.lng !== 'number' || !Number.isFinite(loc.lat) || !Number.isFinite(loc.lng)) {
+              return null
+            }
             const isSelected = loc.id === selectedLocation?.id
             const markerColor = RISK_COLORS[loc.riskCategory] || '#2A9D8F'
             const radius = isSelected ? 14 : loc.riskScore >= 70 ? 11 : 8
@@ -150,7 +168,7 @@ function HealthMap({
                   weight: isSelected ? 3.5 : 2,
                 }}
                 eventHandlers={{
-                  click: () => onSelectLocation(loc.id),
+                  click: () => onSelectLocation && onSelectLocation(loc.id),
                 }}
               >
                 <Tooltip direction="top" offset={[0, -10]} opacity={0.95}>

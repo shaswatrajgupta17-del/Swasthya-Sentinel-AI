@@ -1,4 +1,4 @@
-import { BookOpen, Layers, ShieldCheck, Activity, Database, BrainCircuit, Workflow, Lock, AlertCircle } from 'lucide-react'
+import { BookOpen, Layers, Database, BrainCircuit, Lock, AlertCircle } from 'lucide-react'
 
 function Methodology() {
   return (
@@ -91,7 +91,7 @@ function Methodology() {
 
         <div className="mt-3 space-y-3 text-xs text-slate-700 leading-relaxed">
           <p>
-            The final composite Risk Index $R \in [0, 100]$ for location $i$ is calculated deterministically via:
+            The final composite Risk Index R(i) in [0, 100] for location i is calculated deterministically via:
           </p>
 
           <div className="rounded-md bg-slate-900 p-3.5 text-center font-mono text-emerald-300 text-xs sm:text-sm">
@@ -100,28 +100,28 @@ function Methodology() {
 
           <div className="grid gap-2 sm:grid-cols-2 mt-3">
             <div className="rounded border border-slate-100 bg-slate-50 p-2.5">
-              <strong className="text-sentinel-ink">Statistical Anomaly ($S_{anomaly}$, 40%):</strong>
+              <strong className="text-sentinel-ink">Statistical Anomaly (S_anomaly, 40%):</strong>
               <p className="mt-1 text-[11px] text-slate-600">
                 Sum of syndromic counts (fever + diarrhea) normalized by median baseline: Z_k = sum_7d(k) / (median_30d(k) + 1).
               </p>
             </div>
 
             <div className="rounded border border-slate-100 bg-slate-50 p-2.5">
-              <strong className="text-sentinel-ink">Multi-Source Corroboration ($S_{corrob}$, 30%):</strong>
+              <strong className="text-sentinel-ink">Multi-Source Corroboration (S_corrob, 30%):</strong>
               <p className="mt-1 text-[11px] text-slate-600">
                 Measures coordination: 1 stream elevated = 40 pts, 2 streams = 75 pts, 3+ streams (ASHA + OPD + Pharmacy) = 100 pts.
               </p>
             </div>
 
             <div className="rounded border border-slate-100 bg-slate-50 p-2.5">
-              <strong className="text-sentinel-ink">Spatial Clustering ($S_{spatial}$, 20%):</strong>
+              <strong className="text-sentinel-ink">Spatial Clustering (S_spatial, 20%):</strong>
               <p className="mt-1 text-[11px] text-slate-600">
                 Scikit-Learn DBSCAN applied to geographic coordinates (Haversine metric, radius 2.5 km). Clustered elevated nodes receive 95–100 pts.
               </p>
             </div>
 
             <div className="rounded border border-slate-100 bg-slate-50 p-2.5">
-              <strong className="text-sentinel-ink">Environmental Indicator ($S_{env}$, 10%):</strong>
+              <strong className="text-sentinel-ink">Environmental Indicator (S_env, 10%):</strong>
               <p className="mt-1 text-[11px] text-slate-600">
                 Composite of water risk index (turbidity/pH) and local precipitation deviations.
               </p>
@@ -143,7 +143,7 @@ function Methodology() {
           <li><strong>Deterministic Seed:</strong> Generated with Python random seed <code>20260828</code> for complete scientific reproducibility.</li>
           <li><strong>Scope:</strong> 12 fictional village nodes across Kalyanpur district over a continuous 60-day historical window.</li>
           <li><strong>Planted Outbreak Cluster:</strong> Rampur (loc_001), Lakshmipur (loc_002), and Devgaon (loc_003) in Demo Block East exhibit coordinated multi-signal elevation starting on Day 45.</li>
-          <li><strong>Baseline Nodes:</strong> Remaining 9 villages reflect natural Poisson background variation ($0.7 - 2.1$ score).</li>
+          <li><strong>Baseline Nodes:</strong> Remaining 9 villages reflect natural Poisson background variation (0.7 - 2.1 score).</li>
         </ul>
       </section>
 
@@ -162,7 +162,7 @@ function Methodology() {
             <span>Ethical Governance & Disclaimer for Smart India Hackathon Jury</span>
           </p>
           <p>
-            1. <strong>Zero Personal Health Information (PHI):</strong> The system operates exclusively at the aggregate geographic unit (location $\times$ day). No individual patient names, biometric data, or personally identifiable records exist.
+            1. <strong>Zero Personal Health Information (PHI):</strong> The system operates exclusively at the aggregate geographic unit (location × day). No individual patient names, biometric data, or personally identifiable records exist.
           </p>
           <p>
             2. <strong>Not a Medical Diagnosis System:</strong> Swasthya Sentinel AI detects mathematical and spatial anomalies to direct public health inspection resources. It does not diagnose clinical etiology or provide patient treatment protocols.

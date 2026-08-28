@@ -182,7 +182,7 @@ function LocationDetails({ locationId, onBack, onSelectOtherLocation }) {
             <p className="mt-2.5 text-xs text-slate-600 leading-relaxed">
               {risk.cluster_id ? (
                 <>
-                  This village is spatially associated with <strong>Cluster {risk.cluster_id}</strong> based on DBSCAN geographic proximity ($eps=2.5\text{ km}$). Neighboring village nodes in <strong>{location.block}</strong> block include:
+                  This village is spatially associated with <strong>Cluster {risk.cluster_id}</strong> based on DBSCAN geographic proximity (radius eps = 2.5 km). Neighboring village nodes in <strong>{location.block}</strong> block include:
                 </>
               ) : (
                 'This village currently exhibits isolated baseline signal characteristics with no active spatial cluster grouping.'

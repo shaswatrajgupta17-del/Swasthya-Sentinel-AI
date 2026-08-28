@@ -41,7 +41,7 @@ function Alerts({ onSelectLocation }) {
       const list = data.map(normaliseAlert)
       setAlerts(list)
       if (list.length > 0 && !selectedAlertId) setSelectedAlertId(list[0].id)
-    } catch (err) {
+    } catch {
       setError('Unable to load alert operations from FastAPI')
     } finally {
       setLoading(false)

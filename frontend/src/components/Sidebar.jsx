@@ -1,4 +1,4 @@
-import { Filter, Clock, Sliders, Info } from 'lucide-react'
+import { Filter, Clock } from 'lucide-react'
 
 const SYNDROME_OPTIONS = ['All', 'Fever', 'Diarrhea', 'Cough', 'Rash']
 const DAY_OPTIONS = [7, 14, 30]
