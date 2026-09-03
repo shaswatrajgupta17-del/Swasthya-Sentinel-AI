@@ -21,7 +21,7 @@
     {
       "parameters": {
         "method": "GET",
-        "url": "http://host.docker.internal:8000/alerts?status=open",
+        "url": "http://127.0.0.1:8000/alerts?status=open",
         "options": {}
       },
       "id": "get-open-alerts",

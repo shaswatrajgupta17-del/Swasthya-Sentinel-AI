@@ -1,7 +1,7 @@
 import { format } from 'date-fns'
 import { FileText, AlertTriangle } from 'lucide-react'
 
-function DailyBrief({ risks, alerts, syndrome }) {
+function DailyBrief({ risks, syndrome }) {
   const highRisks = risks.filter(r => r.score_0_100 >= 70)
   const today = format(new Date(), 'dd MMM yyyy')
 

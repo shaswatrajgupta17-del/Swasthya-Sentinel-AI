@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
-import { Activity, Bell, AlertTriangle, CheckCircle2, TrendingUp, RefreshCw, Play, Pause, RotateCcw, MapPin, Clock, Zap } from 'lucide-react'
+import { Activity, Bell, AlertTriangle, CheckCircle2, RefreshCw, MapPin, Clock, Zap } from 'lucide-react'
 import {
   getAlerts,
   getLocations,
