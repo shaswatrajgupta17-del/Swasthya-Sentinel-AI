@@ -118,7 +118,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
       return {
         level: 'high',
         message: `${highRisk.length} village${highRisk.length > 1 ? 's' : ''} need${highRisk.length === 1 ? 's' : ''} immediate review`,
-        detail: `${topVillage.location_name}: ${topVillage.flag_reason || 'Risk score is high'}`,
+        detail: `${topVillage.location_name}: ${topVillage.flag_reason || 'Risk score is elevated'}`,
         icon: ShieldAlert,
       }
     }
@@ -126,14 +126,14 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
       return {
         level: 'watch',
         message: `${watchRisk.length} village${watchRisk.length > 1 ? 's' : ''} need${watchRisk.length === 1 ? 's' : ''} monitoring`,
-        detail: 'Health signals are elevated but not critical. Continue surveillance.',
+        detail: 'Health signals are elevated but not critical. Continue active surveillance.',
         icon: Bell,
       }
     }
     return {
       level: 'low',
       message: 'All villages are within normal range',
-      detail: 'No unusual health signals detected across active surveillance nodes.',
+      detail: 'No anomalous health signals detected across active surveillance nodes.',
       icon: CheckCircle2,
     }
   }
@@ -142,7 +142,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
 
   if (loading) {
     return (
-      <div className="space-y-3.5">
+      <div className="space-y-4">
         <div className="card p-4 animate-pulse">
           <div className="h-5 w-60 rounded" style={{ background: 'var(--border)' }} />
           <div className="mt-2.5 h-3.5 w-80 rounded" style={{ background: 'var(--border)' }} />
@@ -178,13 +178,39 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
   const StatusIcon = status.icon
 
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-4">
+
+      {/* ── VISUAL CONTRAST & DEPTH ENHANCEMENTS (DARK THEME) ── */}
+      <style>{`
+        [data-theme="dark"] {
+          --bg-app: #071017;
+          --bg-sidebar: #0b1722;
+          --bg-card: #132636;
+          --bg-card-subtle: #0b1824;
+          --border: #1e394e;
+          --border-subtle: #172e40;
+        }
+        [data-theme="dark"] aside {
+          background-color: var(--bg-sidebar) !important;
+          border-color: var(--border) !important;
+        }
+        [data-theme="dark"] .card {
+          background-color: var(--bg-card);
+          border-color: var(--border);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 3px 10px -2px rgba(0, 0, 0, 0.3);
+        }
+      `}</style>
 
       {/* ── 1. DISTRICT STATUS COMMAND BANNER ── */}
       <div
         className="card px-4 py-3 border-l-4 transition-theme"
         style={{
           borderLeftColor: status.level === 'high' ? 'var(--red)' : status.level === 'watch' ? 'var(--amber)' : 'var(--green)',
+          background: status.level === 'high'
+            ? 'rgba(220,38,38,0.03)'
+            : status.level === 'watch'
+            ? 'rgba(217,119,6,0.03)'
+            : 'var(--bg-card)',
         }}
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -239,9 +265,9 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
               </span>
             ) : (
               <span
-                className="flex items-center gap-1.5 px-2.5 py-1 rounded font-medium text-[11px]"
+                className="flex items-center gap-1.5 px-2 py-1 rounded font-medium text-[11px]"
                 style={{
-                  background: 'var(--bg-app)',
+                  background: 'var(--bg-card-subtle, var(--bg-app))',
                   color: 'var(--text-light)',
                   border: '1px solid var(--border)',
                 }}
@@ -255,7 +281,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
       </div>
 
       {/* ── 2. OPERATIONAL KPI STRIP ── */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <KPI
           label="Villages Monitored"
           value={locations.length}
@@ -290,9 +316,9 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
       {/* <WhatChanged risks={filteredRisks} simStatus={simStatus} syndrome={syndrome} /> */}
 
       {/* ── 3. PRIMARY SURVEILLANCE STAGE: MAP (HERO) + ACTION & TRIAGE DECK ── */}
-      <div className="grid gap-3.5 lg:grid-cols-12 items-start">
+      <div className="grid gap-4 lg:grid-cols-12 items-start">
 
-        {/* DISTRICT HEALTH MAP — Prominent Hero Visualization (Left / Top Stage) */}
+        {/* DISTRICT HEALTH MAP — Primary Surveillance Workspace */}
         <section className="card overflow-hidden lg:col-span-7 xl:col-span-8 flex flex-col">
           <div
             className="flex items-center justify-between px-4 py-2.5 border-b"
@@ -300,19 +326,19 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
           >
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <h2 className="text-sm font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>
                   District Health Surveillance Map
                 </h2>
                 <span
-                  className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded"
+                  className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded"
                   style={{ background: 'var(--teal-light)', color: 'var(--teal)' }}
                 >
                   {locations.length} Nodes
                 </span>
               </div>
               <p className="text-[11px]" style={{ color: 'var(--text-muted)' }}>
-                Click any village pin to inspect local signal telemetry &amp; trends
+                Spatial health telemetry · Click any village pin for localized signal trends
               </p>
             </div>
             <div className="hidden sm:flex items-center gap-3 text-xs" style={{ color: 'var(--text-muted)' }}>
@@ -342,8 +368,8 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
           <div
             className="card p-3.5 border transition-all"
             style={{
-              background: highRisk.length > 0 ? 'rgba(220,38,38,0.03)' : 'var(--teal-light)',
-              borderColor: highRisk.length > 0 ? 'rgba(220,38,38,0.25)' : 'rgba(14,124,123,0.2)',
+              background: highRisk.length > 0 ? 'rgba(220,38,38,0.02)' : 'var(--teal-light)',
+              borderColor: highRisk.length > 0 ? 'rgba(220,38,38,0.25)' : 'rgba(14,124,123,0.25)',
             }}
           >
             {/* Header: Title + Date + Status Badge */}
@@ -351,7 +377,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
               className="flex items-center justify-between gap-2 pb-2 mb-2.5 border-b"
               style={{ borderColor: 'var(--border)' }}
             >
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center gap-1.5 min-w-0">
                 <FileText className="h-4 w-4 shrink-0" style={{ color: highRisk.length > 0 ? 'var(--red)' : 'var(--teal)' }} />
                 <h2 className="text-xs font-bold uppercase tracking-wider truncate" style={{ color: 'var(--text-main)' }}>
                   Today's Health Brief — {today}
@@ -379,26 +405,27 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                     <div
                       key={r.location_id}
                       onClick={() => onSelectLocation(r.location_id)}
-                      className={`group p-2.5 rounded-lg border text-left transition-all cursor-pointer ${
+                      className={`group p-2.5 rounded-lg border border-l-[3px] text-left transition-all cursor-pointer ${
                         isSelected
                           ? 'ring-1 ring-[var(--teal)]'
                           : 'hover:border-slate-400/50'
                       }`}
                       style={{
-                        background: isSelected ? 'var(--teal-light)' : 'var(--bg-app)',
+                        background: isSelected ? 'var(--teal-light)' : 'var(--bg-card-subtle, var(--bg-app))',
+                        borderLeftColor: 'var(--red)',
                         borderColor: isSelected ? 'var(--teal)' : 'var(--border)',
                       }}
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-1.5 min-w-0">
-                          <span className="inline-block w-2 h-2 rounded-full bg-red-600 shrink-0 animate-pulse" />
+                          <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-600 shrink-0" />
                           <span className="font-bold text-xs sm:text-sm tracking-tight truncate" style={{ color: 'var(--text-main)' }}>
                             {r.location_name}
                           </span>
                         </div>
                         <div className="flex items-center gap-1.5 shrink-0">
                           <span
-                            className="text-[10px] font-bold px-1.5 py-0.2 rounded uppercase tabular-nums"
+                            className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tabular-nums"
                             style={{ background: 'rgba(220,38,38,0.12)', color: 'var(--red)' }}
                           >
                             Score: {Math.round(r.score_0_100)}/100
@@ -406,7 +433,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                           <ChevronRight className="h-3 w-3 opacity-40 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--text-muted)' }} />
                         </div>
                       </div>
-                      <p className="text-[11px] mt-1 line-clamp-2" style={{ color: 'var(--text-muted)' }}>
+                      <p className="text-[11px] mt-1 line-clamp-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                         {r.flag_reason || `Unusual ${syndrome !== 'All' ? syndrome : 'health'} signals detected.`}
                       </p>
                     </div>
@@ -414,7 +441,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                 })}
               </div>
             ) : (
-              <div className="flex items-center gap-2.5 py-2 px-1">
+              <div className="flex items-center gap-2 py-2 px-1">
                 <CheckCircle2 className="h-4 w-4 shrink-0" style={{ color: 'var(--green)' }} />
                 <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>
                   All monitored villages in the district are reporting normal health signals today.
@@ -457,7 +484,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                 <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>All villages are within normal range</p>
               </div>
             ) : (
-              <div className="space-y-2 max-h-[220px] overflow-y-auto pr-0.5">
+              <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-0.5">
                 {topRisks.map(risk => {
                   const locAlert = alerts.find(a => a.location_id === risk.location_id && (a.status === 'open' || a.status === 'new'))
                   const isSelected = selectedId === risk.location_id
@@ -470,7 +497,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                         isSelected ? 'ring-1 ring-[var(--teal)]' : 'hover:border-slate-400/40'
                       }`}
                       style={{
-                        background: isSelected ? 'var(--teal-light)' : 'var(--bg-app)',
+                        background: isSelected ? 'var(--teal-light)' : 'var(--bg-card-subtle, var(--bg-app))',
                         borderColor: isSelected ? 'var(--teal)' : 'var(--border)',
                       }}
                     >
@@ -529,7 +556,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                   className="text-[10px] px-2 py-0.5 rounded font-bold uppercase"
                   style={{ background: 'rgba(217,119,6,0.15)', color: 'var(--amber)' }}
                 >
-                  Running
+                  Active
                 </span>
               )}
             </div>
@@ -546,10 +573,10 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
       </div>
 
       {/* ── 4. SURVEILLANCE SIGNALS & TELEMETRY ── */}
-      <div className="grid gap-3.5 lg:grid-cols-12 items-start">
+      <div className="grid gap-4 lg:grid-cols-12 items-start">
 
         {/* Multi-Source Signal Trends */}
-        <div className="lg:col-span-7 xl:col-span-8 [&>section]:!bg-[var(--bg-card)] [&>section]:!border-[var(--border)] [&>section_h2]:!text-[var(--text-main)] [&>section_.bg-slate-100]:!bg-[var(--bg-app)] [&>section_.text-slate-600]:!text-[var(--text-muted)] [&>section_.text-slate-500]:!text-[var(--text-muted)] [&>div]:!bg-[var(--bg-card)] [&>div]:!border-[var(--border)]">
+        <div className="lg:col-span-7 xl:col-span-8 [&>section]:!bg-[var(--bg-card)] [&>section]:!border-[var(--border)] [&>section_h2]:!text-[var(--text-main)] [&>section_.bg-slate-100]:!bg-[var(--bg-card-subtle)] [&>section_.text-slate-600]:!text-[var(--text-muted)] [&>section_.text-slate-500]:!text-[var(--text-muted)] [&>div]:!bg-[var(--bg-card)] [&>div]:!border-[var(--border)]">
           <TrendPanel trends={trends} />
         </div>
 
@@ -559,11 +586,11 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
           {/* Recent Surveillance Alerts */}
           <section className="card p-3.5">
             <div className="flex items-center justify-between pb-2 mb-2.5 border-b" style={{ borderColor: 'var(--border)' }}>
-              <h2 className="text-xs font-bold uppercase tracking-wider flex items-center gap-2" style={{ color: 'var(--text-main)' }}>
+              <h2 className="text-xs font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: 'var(--text-main)' }}>
                 <Bell className="h-3.5 w-3.5" style={{ color: 'var(--teal)' }} />
                 Recent Surveillance Alerts
               </h2>
-              <span className="text-[11px] px-2 py-0.5 rounded font-semibold" style={{ background: 'var(--bg-app)', color: 'var(--text-muted)' }}>
+              <span className="text-[11px] px-2 py-0.5 rounded font-semibold" style={{ background: 'var(--bg-card-subtle, var(--bg-app))', color: 'var(--text-muted)' }}>
                 {alerts.length} total
               </span>
             </div>
@@ -575,7 +602,7 @@ function Dashboard({ selectedId, onSelectLocation, days = 14, syndrome = 'All', 
                   <div
                     key={alert.id}
                     className="flex items-start gap-2.5 rounded-lg p-2.5 border"
-                    style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }}
+                    style={{ background: 'var(--bg-card-subtle, var(--bg-app))', borderColor: 'var(--border)' }}
                   >
                     <Zap
                       className="h-3.5 w-3.5 mt-0.5 shrink-0"
@@ -624,9 +651,12 @@ function KPI({ label, value, hint, icon: Icon, color = 'teal' }) {
   const c = colors[color] || colors.teal
 
   return (
-    <div className="card p-3 sm:p-3.5 flex flex-col justify-between transition-all hover:border-[var(--teal)]">
+    <div
+      className="card p-3.5 flex flex-col justify-between transition-all hover:border-[var(--teal)] border-t-2"
+      style={{ borderTopColor: c.fg }}
+    >
       <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] font-bold uppercase tracking-wider truncate" style={{ color: 'var(--text-muted)' }}>
+        <span className="text-[11px] font-semibold uppercase tracking-wider truncate" style={{ color: 'var(--text-muted)' }}>
           {label}
         </span>
         <div
@@ -636,11 +666,11 @@ function KPI({ label, value, hint, icon: Icon, color = 'teal' }) {
           <Icon className="h-3.5 w-3.5" style={{ color: c.fg }} />
         </div>
       </div>
-      <div className="mt-1">
+      <div className="mt-1.5">
         <div className="tabular-nums text-2xl sm:text-3xl font-bold tracking-tight" style={{ color: 'var(--text-main)' }}>
           {value}
         </div>
-        {hint && <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--text-light)' }}>{hint}</p>}
+        {hint && <p className="text-[11px] truncate mt-0.5" style={{ color: 'var(--text-muted)' }}>{hint}</p>}
       </div>
     </div>
   )
@@ -654,7 +684,7 @@ function AlertStatusBadge({ status }) {
     acknowledged: { label: 'Acknowledged', bg: 'rgba(14,124,123,0.1)', fg: 'var(--teal)' },
     resolved: { label: 'Resolved', bg: 'rgba(42,157,143,0.1)', fg: 'var(--green)' },
   }
-  const s = map[status] || { label: status, bg: 'var(--bg-app)', fg: 'var(--text-muted)' }
+  const s = map[status] || { label: status, bg: 'var(--bg-card-subtle, var(--bg-app))', fg: 'var(--text-muted)' }
   return (
     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded uppercase" style={{ background: s.bg, color: s.fg }}>
       {s.label}
