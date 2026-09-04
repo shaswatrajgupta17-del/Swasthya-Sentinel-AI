@@ -5,11 +5,21 @@
 ## Flow
 
 1. Schedule Trigger polls every five minutes.
-2. HTTP Request calls `GET http://host.docker.internal:8000/alerts?status=open`.
+2. HTTP Request calls `GET /alerts?status=open` on the local FastAPI server (see API URL below).
 3. Code keeps High alerts with `score_0_100 >= 70` and formats a geographic notification from the API's top factors.
 4. HTTP Request posts the notification JSON to `SENTINEL_NOTIFICATION_WEBHOOK_URL`.
 
-The notification URL is read only from the n8n process environment. Set `SENTINEL_NOTIFICATION_WEBHOOK_URL` to a local request catcher or demo webhook before activating the workflow. An empty value is intentionally not supplied, so importing the workflow cannot send to an unknown endpoint accidentally. No credentials are included.
+## FastAPI alert URL
+
+The exported workflow uses the **native Windows / local n8n** URL:
+
+`http://127.0.0.1:8000/alerts?status=open`
+
+If n8n runs in **Docker** on the same machine as FastAPI, change that HTTP Request node's URL to:
+
+`http://host.docker.internal:8000/alerts?status=open`
+
+Do not commit a live notification URL. The notification URL is read only from the n8n process environment. Set `SENTINEL_NOTIFICATION_WEBHOOK_URL` to a local request catcher or demo webhook before activating the workflow. An empty value is intentionally not supplied, so importing the workflow cannot send to an unknown endpoint accidentally. No credentials are included.
 
 The API payload contains synthetic aggregate data only: location, score, cluster, model version, and factor notes. It contains no patient identifiers and states `not_a_diagnosis: true`.
 
